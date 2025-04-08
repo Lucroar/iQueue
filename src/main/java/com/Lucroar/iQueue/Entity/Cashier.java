@@ -12,7 +12,7 @@ import java.util.Collections;
 @Setter
 public class Cashier implements UserDetails {
     @Id
-    private Id id;
+    private String id;
     private String username;
     private String password;
 

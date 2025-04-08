@@ -26,13 +26,13 @@ public class JwtToUserConverter implements Converter<Jwt, UsernamePasswordAuthen
 
         // Determine user type based on roles
         if (roles.contains("ROLE_CASHIER")) {
-            Cashier manager = new Cashier();
-            manager.setUsername(username);
-            return new UsernamePasswordAuthenticationToken(manager, source, authorities);
+            Cashier cashier = new Cashier();
+            cashier.setUsername(username);
+            return new UsernamePasswordAuthenticationToken(cashier, source, authorities);
         } else {
-            Customer employee = new Customer();
-            employee.setUsername(username);
-            return new UsernamePasswordAuthenticationToken(employee, source, authorities);
+            Customer customer = new Customer();
+            customer.setUsername(username);
+            return new UsernamePasswordAuthenticationToken(customer, source, authorities);
         }
     }
 }

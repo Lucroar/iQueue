@@ -33,7 +33,6 @@ public class SecurityConfig {
     private final PasswordConfig passwordConfig;
 
     public SecurityConfig(RsaKeyProperties rsaKeys,
-                          UserDetailsManager userManager,
                           UserDetailsManager userDetailsManager,
                           JwtToUserConverter jwtConverter,
                           PasswordConfig passwordConfig) {
@@ -52,8 +51,8 @@ public class SecurityConfig {
                         .jwt(jwtConfigurer -> jwtConfigurer
                                 .jwtAuthenticationConverter(jwtConverter)))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/department/new-head", "/employee/new-employee").permitAll()
-                        .requestMatchers("/department/login", "/employee/login").permitAll()
+                        .requestMatchers("/cashier/new-cashier", "/customer/new-customer").permitAll()
+                        .requestMatchers( "/cashier/login", "customer/login").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -67,7 +66,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://leave-filing-system.netlify.app","http://localhost:5173") //CHANGE ME
+                        .allowedOrigins("https://leave-filing-system.netlify.app","http://localhost:8080") //CHANGE ME
                         .allowedMethods("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .exposedHeaders("Authorization")
@@ -95,5 +94,4 @@ public class SecurityConfig {
         authProvider.setUserDetailsService(userDetailsManager);
         return authProvider;
     }
-
 }
