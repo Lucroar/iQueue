@@ -1,15 +1,15 @@
 #!/bin/sh
 
-# Load environment variables from .env file
+# Load the environment variables from the .env file located in /etc/secrets/
 set -a
-source /app/.env
+source /etc/secrets/.env
 set +a
 
-# Decode the PEM files from the environment variables and write them to disk
+# Decode the PEM files from the environment variables and save them in the appropriate location
 echo "$PRIVATE_PEM" | base64 -d > /app/certs/private.pem
 echo "$PUBLIC_PEM" | base64 -d > /app/certs/public.pem
 
-# Set the correct file permissions for the PEM files
+# Set the correct permissions for the PEM files
 chmod 600 /app/certs/*.pem
 
 # Start the Spring Boot application

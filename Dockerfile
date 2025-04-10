@@ -19,18 +19,13 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Manila /etc/localtime && \
 # Copy the JAR from the build stage
 COPY --from=builder /app/target/*.jar app.jar
 
-# Copy .env file into the container
-COPY .env /app/.env
-
-# Create directory for certs
-RUN mkdir -p /app/certs
-
 # Copy the entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Set entrypoint to run the script
-ENTRYPOINT ["/entrypoint.sh"]
-
-# Expose the application port
+# Set the working directory and expose the port
+WORKDIR /app
 EXPOSE 8080
+
+# Run the entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]
