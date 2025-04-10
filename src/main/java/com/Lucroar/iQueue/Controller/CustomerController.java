@@ -2,6 +2,8 @@ package com.Lucroar.iQueue.Controller;
 
 import com.Lucroar.iQueue.Entity.Cashier;
 import com.Lucroar.iQueue.Entity.Customer;
+import com.Lucroar.iQueue.Service.ChangePasswordService;
+import com.Lucroar.iQueue.Service.CustomerService;
 import com.Lucroar.iQueue.Service.TokenService;
 import com.Lucroar.iQueue.Service.UserDetailService;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("customer")
@@ -25,11 +28,18 @@ public class CustomerController {
     private final TokenService tokenService;
     private final DaoAuthenticationProvider authProvider;
     private final UserDetailService userDetailService;
+    private final ChangePasswordService changePasswordService;
+    private final CustomerService customerService;
 
-    public CustomerController(TokenService tokenService, DaoAuthenticationProvider authProvider, UserDetailService userDetailService) {
+    public CustomerController(TokenService tokenService,
+                              DaoAuthenticationProvider authProvider,
+                              UserDetailService userDetailService,
+                              ChangePasswordService changePasswordService, CustomerService customerService) {
         this.tokenService = tokenService;
         this.authProvider = authProvider;
         this.userDetailService = userDetailService;
+        this.changePasswordService = changePasswordService;
+        this.customerService = customerService;
     }
 
     @PostMapping("/login")
@@ -54,5 +64,26 @@ public class CustomerController {
     public ResponseEntity<?> newCustomer(@RequestBody Customer customer) {
         userDetailService.createUser(customer);
         return ResponseEntity.ok(customer);
+    }
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> changePassword(@RequestBody String email) {
+        return ResponseEntity.ok(changePasswordService.sendOtpForCustomer(email));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody String email, String otp) {
+        boolean success = changePasswordService.verifyOtp(email, otp);
+        if (success) {
+            Customer customer = customerService.findCustomerByEmail(email);
+            Authentication auth = authProvider.authenticate(new UsernamePasswordAuthenticationToken(
+                    customer, null, customer.getAuthorities()));
+            String token = tokenService.generateToken(auth).get("token");
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            return ResponseEntity.ok(response);
+        }else {
+            return new ResponseEntity<>(Collections.singletonMap("msg", "Invalid OTP, please try again."), HttpStatus.BAD_REQUEST);
+        }
     }
 }

@@ -26,4 +26,9 @@ public class CustomerService {
         Optional<Customer> customer = customerRepository.findByUsername(username);
         return customer.orElse(null);
     }
+
+    public Customer findCustomerByEmail(String email) {
+        Optional<Customer> customer = customerRepository.findByEmail(email);
+        return customer.orElse(null);
+    }
 }

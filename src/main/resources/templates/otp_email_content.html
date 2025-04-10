@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Code</title>
+    <style>
+        body, html {
+            font-family: "Times New Roman", Times, serif;
+            background-color: #131313;
+            display: block;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .maincontain {
+            justify-content: center;
+            align-items: center;
+            margin-left: auto;
+            margin-right: auto;
+            height: 730px;
+            width: 430px;
+            border: 1px solid rgb(255, 255, 255);
+        }
+
+        .container {
+            background-color: #181818;
+            padding: 20px;
+            padding-top: 30px;
+            text-align: center;
+            height: 590px;
+        }
+
+        .barcontainer {
+            width: 430px;
+            height: 90px;
+        }
+
+        .barcontainer img {
+            width: 100%;
+            height: auto;
+        }
+
+        .econtainer {
+            color: #fff;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0px;
+        }
+
+        .attenhanced {
+            font-weight: lighter;
+        }
+
+        .hVerify {
+            margin-bottom: 2px;
+            font-size: 20px;
+            font-weight: lighter;
+            color: #fff;
+        }
+
+        .logocvsu, .attenhanced {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .logocvsu {
+            border: 0px solid #ddd;
+            padding: 10px;
+            width: 70px;
+            height: 70px;
+        }
+
+        .emaillogo {
+            border: 0px solid #ddd;
+            width: 45px;
+            margin: 10px;
+            padding-top: 10px;
+        }
+
+        .p1 {
+            margin: 10px 0;
+            padding-top: 40px;
+            padding-bottom: 10px;
+            color: #ffffff;
+            font-size: small;
+            letter-spacing: 0.5px;
+            line-height: 2;
+        }
+
+        .p2 {
+            margin: 10px 0;
+            color: #7d7d7e;
+            font-family: Arial, sans-serif;
+            font-size: small;
+            letter-spacing: 0.5px;
+            line-height: 1.7;
+        }
+
+        .p3 {
+            color: #ffffff;
+            font-size: small;
+            letter-spacing: 0.5px;
+        }
+
+        .otpcontain {
+            justify-content: space-between;
+            margin: 20px;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 20px;
+            padding-left: 10px;
+            line-height: 15%;
+        }
+
+        .otpbox {
+            width: 240px;
+            height: 50px;
+            text-align: center;
+            justify-content: center;
+            font-size: 30px;
+            letter-spacing: 6px;
+            border: 1px solid #ddd;
+            background-color: #181818;
+            color: #ffffff;
+            border-radius: 4px;
+            margin: auto;
+        }
+
+        .otp {
+            margin-top: 25px;
+            margin-left: 8px;
+        }
+
+        .hr1 {
+            width: 80%;
+        }
+
+        .hr2 {
+            width: 80%;
+            height: 1px;
+            border: 0;
+            border-top: 1px solid #7d7d7e;
+        }
+        .time{
+            margin-top: 20px;
+            color: #ffffff;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+<div class="maincontain">
+    <div class="barcontainer">
+        <img th:src="'cid:topBar'" alt="topBar">
+    </div>
+    <div class="container">
+        <div class="econtainer">
+<!--            <img th:src="'cid:emailLogo'" alt="email_logo" class="emaillogo">-->
+            <h1 class="hVerify">Verify Your Email Address</h1>
+        </div>
+        <hr class="hr1">
+        <p class="p1">Enter the OTP verification code below to proceed.<br>
+            Do not share this code with anyone.</p>
+        <div class="otpcontain">
+            <div class="otpbox">
+                <p class="otp" th:text="${otp}"></p>
+            </div>
+            <p class="p3"> Expires in 5 minutes</p>
+        </div>
+        <hr class="hr2">
+        <div class ="p2">You received this email because you requested to<br> change your
+            account password. If you didn't request<br> this email, safely ignore and delete it</div>
+        <p class="time" th:text="${time}"></p>
+    </div>
+</div>
+</body>
+</html>
