@@ -3,7 +3,7 @@ FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
 
 # Copy all project files
-COPY . .
+COPY . ./
 
 # Build the Spring Boot application (skip tests if preferred)
 RUN mvn clean package -DskipTests
@@ -19,7 +19,18 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Manila /etc/localtime && \
 # Copy the JAR from the build stage
 COPY --from=builder /app/target/*.jar app.jar
 
-EXPOSE 8080
+# Copy .env file into the container
+COPY .env /app/.env
 
-# Run the app
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Create directory for certs
+RUN mkdir -p /app/certs
+
+# Copy the entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set entrypoint to run the script
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Expose the application port
+EXPOSE 8080
