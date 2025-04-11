@@ -2,7 +2,6 @@ package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Otp.EmailSender;
-import com.Lucroar.iQueue.Otp.OtpDTO;
 import com.Lucroar.iQueue.Otp.OtpStore;
 import com.Lucroar.iQueue.Otp.OtpUtil;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
@@ -32,16 +31,16 @@ public class ChangePasswordService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public boolean sendOtpForCustomer(OtpDTO otpDto){
-        Optional<Customer> customer = customerRepository.findByEmail(otpDto.getEmail());
+    public boolean sendOtpForCustomer(String email){
+        Optional<Customer> customer = customerRepository.findByEmail(email);
         if(customer.isEmpty()){
             return false;
         }
         String otp = OtpUtil.generateOtp();
         Instant expirationTime = Instant.now().plus(5, ChronoUnit.MINUTES);
-        OtpStore.storeOtp(otpDto.getEmail(), otp, expirationTime);
+        OtpStore.storeOtp(email, otp, expirationTime);
         try {
-            emailSender.sendMail(otpDto.getEmail(), otp);
+            emailSender.sendMail(email, otp);
         } catch (MessagingException | IOException e) {
             throw new RuntimeException(e);
         }

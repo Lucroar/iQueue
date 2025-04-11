@@ -2,6 +2,7 @@ package com.Lucroar.iQueue.Controller;
 
 import com.Lucroar.iQueue.Entity.Cashier;
 import com.Lucroar.iQueue.Entity.Customer;
+import com.Lucroar.iQueue.Otp.OtpDTO;
 import com.Lucroar.iQueue.Service.ChangePasswordService;
 import com.Lucroar.iQueue.Service.CustomerService;
 import com.Lucroar.iQueue.Service.TokenService;
@@ -67,8 +68,8 @@ public class CustomerController {
     }
 
     @PostMapping("/send-otp")
-    public ResponseEntity<?> changePassword(@RequestBody String email) {
-        return ResponseEntity.ok(changePasswordService.sendOtpForCustomer(email));
+    public ResponseEntity<?> changePassword(@RequestBody OtpDTO otpDTO) {
+        return ResponseEntity.ok(changePasswordService.sendOtpForCustomer(otpDTO.getEmail()));
     }
 
     @PostMapping("/verify-otp")
