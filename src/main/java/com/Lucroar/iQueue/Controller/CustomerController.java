@@ -64,13 +64,13 @@ public class CustomerController {
 
     @PostMapping("/new-customer")
     public ResponseEntity<?> newCustomer(@RequestBody Customer customer) {
-        userDetailService.createUser(customer);
         if (customerService.existingEmail(customer.getEmail())) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
         }
         if (customerService.existingUsername(customer.getUsername())) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
         }
+        userDetailService.createUser(customer);
         return ResponseEntity.ok(customer);
     }
 
