@@ -64,12 +64,23 @@ public class CustomerController {
     @PostMapping("/new-customer")
     public ResponseEntity<?> newCustomer(@RequestBody Customer customer) {
         userDetailService.createUser(customer);
+        if (customerService.existingEmail(customer.getEmail())) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
+        }
+        if (customerService.existingUsername(customer.getUsername())) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
+        }
         return ResponseEntity.ok(customer);
     }
 
     @PostMapping("/send-otp")
     public ResponseEntity<?> changePassword(@RequestBody OtpDTO otpDTO) {
-        return ResponseEntity.ok(changePasswordService.sendOtpForCustomer(otpDTO.getEmail()));
+        boolean success = changePasswordService.sendOtpForCustomer(otpDTO.getEmail());
+        if (success) {
+            return ResponseEntity.ok(Collections.singletonMap("msg", "OTP sent successfully"));
+        } else {
+            return new ResponseEntity<>(Collections.singletonMap("msg", "No account associated with this email address."), HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/verify-otp")

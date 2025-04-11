@@ -31,4 +31,12 @@ public class CustomerService {
         Optional<Customer> customer = customerRepository.findByEmail(email);
         return customer.orElse(null);
     }
+
+    public boolean existingUsername(String username) {
+        return customerRepository.findByUsername(username).isPresent();
+    }
+
+    public boolean existingEmail(String email) {
+        return customerRepository.findByEmail(email).isPresent();
+    }
 }
