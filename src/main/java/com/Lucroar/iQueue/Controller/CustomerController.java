@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("customer")
+@RequestMapping("/customer")
 public class CustomerController {
     private final TokenService tokenService;
     private final DaoAuthenticationProvider authProvider;
