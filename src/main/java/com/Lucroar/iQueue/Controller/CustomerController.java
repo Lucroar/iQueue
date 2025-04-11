@@ -1,6 +1,7 @@
 package com.Lucroar.iQueue.Controller;
 
 import com.Lucroar.iQueue.Entity.Cashier;
+import com.Lucroar.iQueue.Entity.ChangePasswordDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Otp.OtpDTO;
 import com.Lucroar.iQueue.Service.ChangePasswordService;
@@ -84,18 +85,28 @@ public class CustomerController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody String email, String otp) {
-        boolean success = changePasswordService.verifyOtp(email, otp);
+    public ResponseEntity<?> verifyOtp(@RequestBody OtpDTO otpDTO) {
+        boolean success = changePasswordService.verifyOtp(otpDTO.getEmail(), otpDTO.getOtp());
         if (success) {
-            Customer customer = customerService.findCustomerByEmail(email);
-            Authentication auth = authProvider.authenticate(new UsernamePasswordAuthenticationToken(
-                    customer, null, customer.getAuthorities()));
+            Customer customer = customerService.findCustomerByEmail(otpDTO.getEmail());
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                    customer.getUsername(), null, customer.getAuthorities());
             String token = tokenService.generateToken(auth).get("token");
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             return ResponseEntity.ok(response);
         }else {
             return new ResponseEntity<>(Collections.singletonMap("msg", "Invalid OTP, please try again."), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO request){
+        boolean success = changePasswordService.changePassword(request.getEmail(), request.getNewPassword());
+        if (success) {
+            return new ResponseEntity<>(Collections.singletonMap("msg", "Password changed successfully!"), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(Collections.singletonMap("msg", "Password cannot be changed to current password."), HttpStatus.BAD_REQUEST);
         }
     }
 }
