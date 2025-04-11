@@ -1,16 +1,14 @@
 #!/bin/sh
 
-# Load the environment variables from the .env file located in /etc/secrets/
-set -a
-source /etc/secrets/.env
-set +a
+# Make sure target directory exists
+mkdir -p /app/certs
 
-# Decode the PEM files from the environment variables and save them in the appropriate location
-echo "$PRIVATE_PEM" | base64 -d > /app/certs/private.pem
-echo "$PUBLIC_PEM" | base64 -d > /app/certs/public.pem
+# Copy the PEM files from mounted secrets
+cp /etc/secrets/*.pem /app/certs/
 
-# Set the correct permissions for the PEM files
-chmod 600 /app/certs/*.pem
+# Optionally export as env vars if Spring Boot reads from env
+export PRIVATE_KEY_PATH=/app/certs/private.pem
+export PUBLIC_KEY_PATH=/app/certs/public.pem
 
 # Start the Spring Boot application
 exec java -jar /app/app.jar
