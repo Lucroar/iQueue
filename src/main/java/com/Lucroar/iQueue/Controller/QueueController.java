@@ -19,8 +19,8 @@ public class QueueController {
         this.queueService = queueService;
     }
 
-    @PostMapping("/insert-queue")
-    public ResponseEntity<?> insertQueue(@AuthenticationPrincipal Jwt jwt, @RequestBody QueueDTO queue) {
-        return ResponseEntity.ok(queueService.insertToQueue(jwt, queue));
+    @PostMapping("/enter-queue")
+    public ResponseEntity<?> enterQueue(@AuthenticationPrincipal Jwt jwt, @RequestBody QueueDTO queue) {
+        return ResponseEntity.ok(queueService.enterQueue(jwt, queue));
     }
 }

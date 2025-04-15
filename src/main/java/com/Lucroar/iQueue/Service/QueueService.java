@@ -20,7 +20,7 @@ public class QueueService {
     }
 
     //A qr code contains the number of table and the username
-    public Queue insertToQueue(Jwt jwt, QueueDTO queue) {
+    public Queue enterQueue(Jwt jwt, QueueDTO queue) {
         Queue queueEntity = new Queue();
         queueEntity.setQueueing_number((int) sequenceGenerator.generateDailySequence("queue_sequence"));
         queueEntity.setCustomer(jwt.getClaim("customer"));
