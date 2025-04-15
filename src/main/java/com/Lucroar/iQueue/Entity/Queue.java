@@ -12,6 +12,7 @@ public class Queue {
     @Id
     private Id queue_id;
     private Customer customer;
+    private int queueing_number;
     private Status status;
     private LocalDateTime waiting_since;
     private int num_people;

@@ -1,7 +1,6 @@
 package com.Lucroar.iQueue.Controller;
 
-import com.Lucroar.iQueue.Entity.Cashier;
-import com.Lucroar.iQueue.Entity.ChangePasswordDTO;
+import com.Lucroar.iQueue.DTO.ChangePasswordDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Otp.OtpDTO;
 import com.Lucroar.iQueue.Service.ChangePasswordService;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/customer")

@@ -1,4 +1,4 @@
-package com.Lucroar.iQueue.Entity;
+package com.Lucroar.iQueue.DTO;
 
 import lombok.Data;
 
