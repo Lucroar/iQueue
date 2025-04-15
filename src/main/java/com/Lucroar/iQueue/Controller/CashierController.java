@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("cashier")
+@RequestMapping("/cashier")
 public class CashierController {
     private final TokenService tokenService;
     private final DaoAuthenticationProvider authProvider;
