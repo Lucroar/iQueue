@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Entity;
 
+import com.Lucroar.iQueue.DTO.CustomerDTO;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 public class Queue {
     @Id
     private Id queue_id;
-    private Customer customer;
+    private CustomerDTO customer;
     private int queueing_number;
     private Status status;
     private LocalDateTime waiting_since;
