@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 public class Queue {
     @Id
-    private Id queue_id;
+    private String id;
     private CustomerDTO customer;
     private int queueing_number;
     private Status status;
