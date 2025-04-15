@@ -12,16 +12,17 @@ import java.time.LocalDateTime;
 @Service
 public class QueueService {
     private final QueueRepository queueRepository;
+    private final DailySequenceGeneratorService sequenceGenerator;
 
-    public QueueService(QueueRepository queueRepository) {
+    public QueueService(QueueRepository queueRepository, DailySequenceGeneratorService sequenceGenerator) {
         this.queueRepository = queueRepository;
+        this.sequenceGenerator = sequenceGenerator;
     }
-
 
     //A qr code contains the number of table and the username
     public Queue insertToQueue(Jwt jwt, QueueDTO queue) {
         Queue queueEntity = new Queue();
-
+        queueEntity.setQueueing_number((int) sequenceGenerator.generateDailySequence("queue_sequence"));
         queueEntity.setCustomer(jwt.getClaim("customer"));
         queueEntity.setStatus(Status.WAITING);
         queueEntity.setWaiting_since(LocalDateTime.now());

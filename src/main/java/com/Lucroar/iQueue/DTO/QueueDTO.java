@@ -10,7 +10,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QueueDTO {
-    private Jwt token;
+    private int queue_id;
     private int num_people;
     private Status status;
 }
