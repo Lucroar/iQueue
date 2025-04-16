@@ -13,10 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,12 +32,23 @@ public class CustomerController {
     public CustomerController(TokenService tokenService,
                               DaoAuthenticationProvider authProvider,
                               UserDetailService userDetailService,
-                              ChangePasswordService changePasswordService, CustomerService customerService) {
+                              ChangePasswordService changePasswordService,
+                              CustomerService customerService) {
         this.tokenService = tokenService;
         this.authProvider = authProvider;
         this.userDetailService = userDetailService;
         this.changePasswordService = changePasswordService;
         this.customerService = customerService;
+    }
+
+    @GetMapping("/view-profile")
+    public ResponseEntity<Customer> getProfile(@AuthenticationPrincipal Customer customer) {
+        return ResponseEntity.ok(customer);
+    }
+
+    @PostMapping("/update-profile")
+    public ResponseEntity<Customer> updateProfile(Customer customer) {
+        return ResponseEntity.ok(customerService.updateCustomer(customer));
     }
 
     @PostMapping("/login")

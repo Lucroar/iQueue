@@ -32,6 +32,10 @@ public class CustomerService {
         return customer.orElse(null);
     }
 
+    public Customer updateCustomer(Customer customer) {
+        return customerRepository.save(customer);
+    }
+
     public boolean existingUsername(String username) {
         return customerRepository.findByUsername(username).isPresent();
     }
