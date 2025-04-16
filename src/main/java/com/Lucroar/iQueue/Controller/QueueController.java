@@ -1,7 +1,7 @@
 package com.Lucroar.iQueue.Controller;
 
-import com.Lucroar.iQueue.DTO.QueueDTO;
 import com.Lucroar.iQueue.Entity.Customer;
+import com.Lucroar.iQueue.Entity.Queue;
 import com.Lucroar.iQueue.Service.QueueService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,7 +20,7 @@ public class QueueController {
     }
 
     @PostMapping("/enter-queue")
-    public ResponseEntity<?> enterQueue(@AuthenticationPrincipal Customer customer, @RequestBody QueueDTO queue) {
+    public ResponseEntity<?> enterQueue(@AuthenticationPrincipal Customer customer, @RequestBody Queue queue) {
         return ResponseEntity.ok(queueService.enterQueue(customer, queue));
     }
 }
