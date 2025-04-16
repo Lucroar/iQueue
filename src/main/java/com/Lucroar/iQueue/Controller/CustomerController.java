@@ -1,6 +1,7 @@
 package com.Lucroar.iQueue.Controller;
 
 import com.Lucroar.iQueue.DTO.ChangePasswordDTO;
+import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Otp.OtpDTO;
 import com.Lucroar.iQueue.Service.ChangePasswordService;
@@ -42,12 +43,14 @@ public class CustomerController {
     }
 
     @GetMapping("/view-profile")
-    public ResponseEntity<Customer> getProfile(@AuthenticationPrincipal Customer customer) {
-        return ResponseEntity.ok(customer);
+    public ResponseEntity<CustomerDTO> getProfile(@AuthenticationPrincipal Customer customer) {
+        Customer customerCont = customerService.findCustomerByUsername(customer.getUsername());
+        CustomerDTO customerDTO = new CustomerDTO(customer);
+        return ResponseEntity.ok(customerDTO);
     }
 
     @PostMapping("/update-profile")
-    public ResponseEntity<Customer> updateProfile(Customer customer) {
+    public ResponseEntity<CustomerDTO> updateProfile(CustomerDTO customer) {
         return ResponseEntity.ok(customerService.updateCustomer(customer));
     }
 

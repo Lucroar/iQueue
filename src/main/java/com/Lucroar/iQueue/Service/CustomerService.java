@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,8 +33,16 @@ public class CustomerService {
         return customer.orElse(null);
     }
 
-    public Customer updateCustomer(Customer customer) {
-        return customerRepository.save(customer);
+    public CustomerDTO updateCustomer(CustomerDTO customerDTO) {
+        Customer customer = customerRepository.findByUsername(customerDTO.getUsername()).get();
+        customer.setUsername(customerDTO.getUsername());
+        customer.setEmail(customerDTO.getEmail());
+        customer.setFirst_name(customerDTO.getFirst_Name());
+        customer.setLast_name(customerDTO.getLast_Name());
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+        customerRepository.save(customer);
+        customerDTO.setPassword("");
+        return customerDTO;
     }
 
     public boolean existingUsername(String username) {
