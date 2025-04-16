@@ -39,7 +39,7 @@ public class CustomerService {
         customer.setEmail(customerDTO.getEmail());
         customer.setFirst_name(customerDTO.getFirst_Name());
         customer.setLast_name(customerDTO.getLast_Name());
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+        customer.setPassword(passwordEncoder.encode(customerDTO.getPassword()));
         customerRepository.save(customer);
         customerDTO.setPassword("");
         return customerDTO;
