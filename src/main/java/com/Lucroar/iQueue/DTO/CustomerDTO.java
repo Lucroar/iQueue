@@ -1,11 +1,13 @@
 package com.Lucroar.iQueue.DTO;
 
 import com.Lucroar.iQueue.Entity.Customer;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@JsonInclude (JsonInclude.Include.NON_NULL)
 public class CustomerDTO {
     private String customer_id;
     private String username;
