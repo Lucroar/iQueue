@@ -1,5 +1,7 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.Entity.Cashier;
+import com.Lucroar.iQueue.Entity.Customer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -29,8 +31,18 @@ public class TokenService {
                 .map(GrantedAuthority::getAuthority)
                 .filter(role -> role.equals("ROLE_CASHIER") || role.equals("ROLE_CUSTOMER"))
                 .collect(Collectors.toSet());
-
         String userType = roles.contains("ROLE_CASHIER") ? "Cashier" : "Customer";
+
+        Object principal = authentication.getPrincipal();
+        String userId;
+
+        if (principal instanceof Customer customer) {
+            userId = customer.getCustomer_id();
+        } else if (principal instanceof Cashier cashier) {
+            userId = cashier.getCashier_id();
+        } else {
+            throw new IllegalStateException("Unknown user type");
+        }
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
@@ -39,6 +51,7 @@ public class TokenService {
                 .subject(authentication.getName())
                 .claim("roles", roles)
                 .claim("userType", userType)
+                .claim("userId", userId)
                 .build();
 
         return Collections.singletonMap("token", this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue());

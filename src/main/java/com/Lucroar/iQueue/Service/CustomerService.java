@@ -34,14 +34,14 @@ public class CustomerService {
     }
 
     public CustomerDTO updateCustomer(CustomerDTO customerDTO) {
-        Customer customer = customerRepository.findByUsername(customerDTO.getUsername()).get();
-        customer.setUsername(customerDTO.getUsername());
-        customer.setEmail(customerDTO.getEmail());
-        customer.setFirst_name(customerDTO.getFirst_Name());
-        customer.setLast_name(customerDTO.getLast_Name());
-        customer.setPassword(passwordEncoder.encode(customerDTO.getPassword()));
-        customerRepository.save(customer);
-        customerDTO.setPassword("");
+        Customer customer = customerRepository.findById(customerDTO.getUsername()).orElse(null);
+        if (customer != null) {
+            customer.setUsername(customerDTO.getUsername());
+            customer.setEmail(customerDTO.getEmail());
+            customer.setFirst_name(customerDTO.getFirst_Name());
+            customer.setLast_name(customerDTO.getLast_Name());
+            customerRepository.save(customer);
+        }
         return customerDTO;
     }
 

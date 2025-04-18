@@ -1,7 +1,8 @@
 package com.Lucroar.iQueue.Entity;
 
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,10 +10,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-@Setter
+@Data
+@Document(collection = "Cashier")
 public class Cashier implements UserDetails {
     @Id
-    private String id;
+    private String cashier_id;
     private String username;
     private String password;
 

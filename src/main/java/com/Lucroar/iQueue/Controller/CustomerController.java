@@ -44,14 +44,15 @@ public class CustomerController {
 
     @GetMapping("/view-profile")
     public ResponseEntity<CustomerDTO> getProfile(@AuthenticationPrincipal Customer customer) {
-        Customer customerCont = customerService.findCustomerByUsername(customer.getUsername());
+        Customer customerCont = customerService.findCustomerByUsername(customer.getCustomer_id());
         CustomerDTO customerDTO = new CustomerDTO(customerCont);
         return ResponseEntity.ok(customerDTO);
     }
 
-    @PostMapping("/update-profile")
-    public ResponseEntity<CustomerDTO> updateProfile(CustomerDTO customer) {
-        return ResponseEntity.ok(customerService.updateCustomer(customer));
+    @PatchMapping("/update-profile")
+    public ResponseEntity<CustomerDTO> updateProfile(@AuthenticationPrincipal Customer customer, CustomerDTO customerDTO) {
+        customerDTO.setCustomer_id(customer.getCustomer_id());
+        return ResponseEntity.ok(customerService.updateCustomer(customerDTO));
     }
 
     @PostMapping("/login")
@@ -72,7 +73,7 @@ public class CustomerController {
         }
     }
 
-    @PostMapping("/new-customer")
+    @PostMapping("/register")
     public ResponseEntity<?> newCustomer(@RequestBody Customer customer) {
         if (customerService.existingEmail(customer.getEmail())) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));

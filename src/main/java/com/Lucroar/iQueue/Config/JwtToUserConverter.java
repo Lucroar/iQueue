@@ -16,8 +16,7 @@ import java.util.stream.Collectors;
 public class JwtToUserConverter implements Converter<Jwt, UsernamePasswordAuthenticationToken> {
     @Override
     public UsernamePasswordAuthenticationToken convert(Jwt source) {
-        String username = source.getClaimAsString("sub"); // Subject field contains username
-        List<String> roles = source.getClaimAsStringList("roles"); // Extract roles from JWT
+        List<String> roles = source.getClaimAsStringList("roles");
 
         // Convert roles to GrantedAuthority
         Set<SimpleGrantedAuthority> authorities = roles.stream()
@@ -27,11 +26,13 @@ public class JwtToUserConverter implements Converter<Jwt, UsernamePasswordAuthen
         // Determine user type based on roles
         if (roles.contains("ROLE_CASHIER")) {
             Cashier cashier = new Cashier();
-            cashier.setUsername(username);
+            cashier.setUsername(source.getClaimAsString("sub"));
+            cashier.setCashier_id(source.getClaimAsString("userId"));
             return new UsernamePasswordAuthenticationToken(cashier, source, authorities);
         } else {
             Customer customer = new Customer();
-            customer.setUsername(username);
+            customer.setUsername(source.getClaimAsString("sub"));
+            customer.setCustomer_id(source.getClaimAsString("userId"));
             return new UsernamePasswordAuthenticationToken(customer, source, authorities);
         }
     }

@@ -7,7 +7,6 @@ import com.Lucroar.iQueue.Entity.Queue;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

@@ -19,16 +19,13 @@ public class ChangePasswordService {
     private final CustomerRepository customerRepository;
     private final EmailSender emailSender;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public ChangePasswordService(CustomerRepository customerRepository,
                                  EmailSender emailSender,
-                                 BCryptPasswordEncoder passwordEncoder,
-                                 BCryptPasswordEncoder bCryptPasswordEncoder) {
+                                 BCryptPasswordEncoder passwordEncoder) {
         this.customerRepository = customerRepository;
         this.emailSender = emailSender;
         this.passwordEncoder = passwordEncoder;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public boolean sendOtpForCustomer(String email){
@@ -60,7 +57,7 @@ public class ChangePasswordService {
         Optional<Customer> optCustomer = customerRepository.findByEmail(email);
         if(optCustomer.isPresent()){
             Customer customer = optCustomer.get();
-            if (bCryptPasswordEncoder.matches(newPassword, customer.getPassword())) return false;
+            if (passwordEncoder.matches(newPassword, customer.getPassword())) return false;
             customer.setPassword(passwordEncoder.encode(newPassword));
             customerRepository.save(customer);
             return true;
