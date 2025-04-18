@@ -34,8 +34,7 @@ public class CustomerService {
     }
 
     public CustomerDTO updateCustomer(CustomerDTO customerDTO) {
-        Customer customer = customerRepository.findById(customerDTO.getUsername()).orElse(null);
-        System.out.println(customer);
+        Customer customer = customerRepository.findById(customerDTO.getCustomer_id()).orElse(null);
         if (customer != null) {
             customer.setCustomer_id(customerDTO.getCustomer_id());
             customer.setUsername(customerDTO.getUsername());
