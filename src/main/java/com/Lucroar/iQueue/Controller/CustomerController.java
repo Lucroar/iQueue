@@ -50,7 +50,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/update-profile")
-    public ResponseEntity<CustomerDTO> updateProfile(@AuthenticationPrincipal Customer customer, CustomerDTO customerDTO) {
+    public ResponseEntity<CustomerDTO> updateProfile(@AuthenticationPrincipal Customer customer, @RequestBody CustomerDTO customerDTO) {
         customerDTO.setCustomer_id(customer.getCustomer_id());
         return ResponseEntity.ok(customerService.updateCustomer(customerDTO));
     }
