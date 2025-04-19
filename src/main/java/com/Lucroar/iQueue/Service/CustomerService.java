@@ -23,8 +23,8 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public Customer findCustomerByUsername(String username) {
-        Optional<Customer> customer = customerRepository.findByUsername(username);
+    public Customer findCustomerById(String customerId) {
+        Optional<Customer> customer = customerRepository.findById(customerId);
         return customer.orElse(null);
     }
 

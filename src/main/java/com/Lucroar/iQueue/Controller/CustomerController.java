@@ -44,7 +44,7 @@ public class CustomerController {
 
     @GetMapping("/view-profile")
     public ResponseEntity<CustomerDTO> getProfile(@AuthenticationPrincipal Customer customer) {
-        Customer customerCont = customerService.findCustomerByUsername(customer.getCustomer_id());
+        Customer customerCont = customerService.findCustomerById(customer.getCustomer_id());
         CustomerDTO customerDTO = new CustomerDTO(customerCont);
         return ResponseEntity.ok(customerDTO);
     }
