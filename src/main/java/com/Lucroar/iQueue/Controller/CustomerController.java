@@ -50,8 +50,11 @@ public class CustomerController {
     }
 
     @PatchMapping("/update-profile")
-    public ResponseEntity<CustomerDTO> updateProfile(@AuthenticationPrincipal Customer customer, @RequestBody CustomerDTO customerDTO) {
+    public ResponseEntity<?> updateProfile(@AuthenticationPrincipal Customer customer, @RequestBody CustomerDTO customerDTO) {
         customerDTO.setCustomer_id(customer.getCustomer_id());
+        if (checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername()) != null) {
+            return checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername());
+        }
         return ResponseEntity.ok(customerService.updateCustomer(customerDTO));
     }
 
@@ -75,11 +78,8 @@ public class CustomerController {
 
     @PostMapping("/register")
     public ResponseEntity<?> newCustomer(@RequestBody Customer customer) {
-        if (customerService.existingEmail(customer.getEmail())) {
-            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
-        }
-        if (customerService.existingUsername(customer.getUsername())) {
-            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
+        if (checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername()) != null) {
+            return checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername());
         }
         userDetailService.createUser(customer);
         return ResponseEntity.ok(customer);
@@ -101,7 +101,7 @@ public class CustomerController {
         if (success) {
             Customer customer = customerService.findCustomerByEmail(otpDTO.getEmail());
             Authentication auth = new UsernamePasswordAuthenticationToken(
-                    customer.getUsername(), null, customer.getAuthorities());
+                    customer, null, customer.getAuthorities());
             String token = tokenService.generateToken(auth).get("token");
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
@@ -111,7 +111,7 @@ public class CustomerController {
         }
     }
 
-    @PostMapping("/change-password")
+    @PatchMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO request){
         boolean success = changePasswordService.changePassword(request.getEmail(), request.getNewPassword());
         if (success) {
@@ -119,5 +119,15 @@ public class CustomerController {
         } else {
             return new ResponseEntity<>(Collections.singletonMap("msg", "Password cannot be changed to current password."), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private ResponseEntity<Map<String, String>> checkExistingEmailAndUsername(String email, String username) {
+        if (customerService.existingEmail(email)) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
+        }
+        if (customerService.existingUsername(username)) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
+        }
+        return null;
     }
 }
