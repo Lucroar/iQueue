@@ -52,7 +52,7 @@ public class SecurityConfig {
                                 .jwtAuthenticationConverter(jwtConverter)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/cashier/new-cashier", "/cashier/login", "/cashier/hello").permitAll()
-                        .requestMatchers( "/customer/new-customer", "customer/login", "customer/send-otp",
+                        .requestMatchers( "/customer/register", "customer/login", "customer/send-otp",
                                 "customer/verify-otp").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
