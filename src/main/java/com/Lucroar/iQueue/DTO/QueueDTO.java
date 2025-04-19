@@ -13,11 +13,13 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QueueDTO {
     private String queue_id;
+    private String queueing_number;
     private int num_people;
     private Status status;
 
     public QueueDTO(Queue queue) {
         this.queue_id = queue.getId();
+        this.queueing_number = queue.getQueueing_number();
         this.num_people = queue.getNum_people();
         this.status = queue.getStatus();
     }

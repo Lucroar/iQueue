@@ -22,7 +22,7 @@ public class QueueController {
         return ResponseEntity.ok(queueService.createQueue(customer, queue));
     }
 
-    @PostMapping("/enter")
+    @PatchMapping("/enter")
     public ResponseEntity<?> enterQueue(@RequestBody QueueDTO queue) {
         return ResponseEntity.ok(queueService.enterQueue(queue));
     }

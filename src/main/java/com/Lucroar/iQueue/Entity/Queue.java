@@ -13,7 +13,7 @@ public class Queue {
     @Id
     private String id;
     private CustomerDTO customer;
-    private int queueing_number;
+    private String queueing_number;
     private Status status;
     private LocalDateTime waiting_since;
     private int num_people;

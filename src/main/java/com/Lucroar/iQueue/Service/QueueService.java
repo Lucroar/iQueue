@@ -30,13 +30,14 @@ public class QueueService {
 
     //A qr code contains the number of table and the username
     public QueueDTO  createQueue(Customer customer, Queue queue) {
-        if (checkQueue(customer) != null) return null;
+        QueueDTO queueDTO = checkQueue(customer);
+        if (queueDTO != null) return queueDTO;
         Customer customerCont = customerRepository.findByUsername(customer.getUsername()).get();
         CustomerDTO customerDTO = new CustomerDTO();
         customerDTO.setCustomer_id(customerCont.getCustomer_id());
         customerDTO.setUsername(customer.getUsername());
 
-        queue.setQueueing_number((int) sequenceGenerator.generateDailySequence("queue_sequence"));
+        queue.setQueueing_number(sequenceGenerator.generateQueueCode(queue.getNum_people()));
         queue.setCustomer(customerDTO);
         queue.setStatus(Status.CREATED);
         queue.setWaiting_since(LocalDateTime.now());
@@ -57,6 +58,7 @@ public class QueueService {
             Queue queueEntity = queueCont.get();
             queueEntity.setStatus(Status.WAITING);
             queue.setStatus(queueEntity.getStatus());
+            queueRepository.save(queueEntity);
             return queue;
         }
         return null;
