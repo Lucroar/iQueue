@@ -1,0 +1,22 @@
+package com.Lucroar.iQueue.Controller;
+
+import com.Lucroar.iQueue.DTO.MenuDTO;
+import com.Lucroar.iQueue.Service.MenuService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.io.IOException;
+
+@RestController
+@RequestMapping("/menu")
+public class MenuController {
+    private final MenuService menuService;
+
+    public MenuController(MenuService menuService) {
+        this.menuService = menuService;
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<?> addMenu(@ModelAttribute MenuDTO menuDTO) throws IOException {
+        return ResponseEntity.ok(menuService.addMenu(menuDTO));
+    }
+}
