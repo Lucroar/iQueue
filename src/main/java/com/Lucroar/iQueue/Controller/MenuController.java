@@ -1,6 +1,7 @@
 package com.Lucroar.iQueue.Controller;
 
 import com.Lucroar.iQueue.DTO.MenuDTO;
+import com.Lucroar.iQueue.Entity.Category;
 import com.Lucroar.iQueue.Service.MenuService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,5 +19,10 @@ public class MenuController {
     @PostMapping("/add")
     public ResponseEntity<?> addMenu(@ModelAttribute MenuDTO menuDTO) throws IOException {
         return ResponseEntity.ok(menuService.addMenu(menuDTO));
+    }
+
+    @GetMapping("/view/{category}")
+    public ResponseEntity<?> viewMenu(@PathVariable Category category) {
+        return ResponseEntity.ok(menuService.getMenuByCategory(category));
     }
 }

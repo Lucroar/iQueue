@@ -13,7 +13,7 @@ public class Menu {
     @Id
     private String menu_id;
     private String name;
-    private String category;
+    private Category category;
     private String img_url;
     private String description;
     private int price;
