@@ -25,4 +25,9 @@ public class MenuController {
     public ResponseEntity<?> viewMenu(@PathVariable Category category) {
         return ResponseEntity.ok(menuService.getMenuByCategory(category));
     }
+
+    @GetMapping("/item/{menuId}")
+    public ResponseEntity<?> viewItem(@PathVariable String menuId){
+        return ResponseEntity.ok(menuService.findById(menuId));
+    }
 }

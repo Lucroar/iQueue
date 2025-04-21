@@ -19,6 +19,10 @@ public class MenuService {
         this.s3Service = s3Service;
     }
 
+    public Menu findById(String id){
+        return menuRepository.findById(id).orElse(null);
+    }
+
     public Menu addMenu(MenuDTO menuDTO) throws IOException {
         String img_url = s3Service.uploadFile(menuDTO.getImg_url());
         Menu menu = new Menu(menuDTO, img_url);
