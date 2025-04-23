@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+
 @RestController
 @RequestMapping("/queue")
 public class QueueController {
@@ -19,7 +21,11 @@ public class QueueController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createQueue(@AuthenticationPrincipal Customer customer, @RequestBody Queue queue) {
-        return ResponseEntity.ok(queueService.createQueue(customer, queue));
+        QueueDTO queueDTO = queueService.createQueue(customer, queue);
+        if (queueDTO == null) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Already Created a Queue"));
+        }
+        return ResponseEntity.ok(queueDTO);
     }
 
     @PatchMapping("/enter")
@@ -30,5 +36,10 @@ public class QueueController {
     @GetMapping("/check")
     public ResponseEntity<?> checkQueue(@AuthenticationPrincipal Customer customer) {
         return ResponseEntity.ok(queueService.checkQueue(customer));
+    }
+
+    @PatchMapping("/cancel")
+    public ResponseEntity<?> cancelQueue(@RequestBody QueueDTO queue) {
+        return ResponseEntity.ok(queueService.cancelQueue(queue));
     }
 }

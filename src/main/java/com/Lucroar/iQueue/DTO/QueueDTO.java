@@ -18,7 +18,7 @@ public class QueueDTO {
     private Status status;
 
     public QueueDTO(Queue queue) {
-        this.queue_id = queue.getId();
+        this.queue_id = queue.getQueue_id();
         this.queueing_number = queue.getQueueing_number();
         this.num_people = queue.getNum_people();
         this.status = queue.getStatus();

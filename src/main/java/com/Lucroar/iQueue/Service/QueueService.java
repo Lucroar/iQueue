@@ -31,7 +31,7 @@ public class QueueService {
     //A qr code contains the number of table and the username
     public QueueDTO  createQueue(Customer customer, Queue queue) {
         QueueDTO queueDTO = checkQueue(customer);
-        if (queueDTO != null) return queueDTO;
+        if (queueDTO != null) return null;
         Customer customerCont = customerRepository.findByUsername(customer.getUsername()).get();
         CustomerDTO customerDTO = new CustomerDTO();
         customerDTO.setCustomer_id(customerCont.getCustomer_id());
@@ -57,9 +57,19 @@ public class QueueService {
         if (queueCont.isPresent()) {
             Queue queueEntity = queueCont.get();
             queueEntity.setStatus(Status.WAITING);
-            queue.setStatus(queueEntity.getStatus());
             queueRepository.save(queueEntity);
-            return queue;
+            return new QueueDTO(queueEntity);
+        }
+        return null;
+    }
+
+    public QueueDTO cancelQueue(QueueDTO queue) {
+        Optional<Queue> queueCont = queueRepository.findById(queue.getQueue_id());
+        if (queueCont.isPresent()) {
+            Queue queueEntity = queueCont.get();
+            queueEntity.setStatus(Status.CANCELLED);
+            queueRepository.save(queueEntity);
+            return new QueueDTO(queueEntity);
         }
         return null;
     }
