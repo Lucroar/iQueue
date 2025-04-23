@@ -112,8 +112,8 @@ public class CustomerController {
     }
 
     @PatchMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO request){
-        boolean success = changePasswordService.changePassword(request.getEmail(), request.getNewPassword());
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal Customer customer, @RequestBody ChangePasswordDTO request){
+        boolean success = changePasswordService.changePassword(customer.getCustomer_id(), request.getNewPassword());
         if (success) {
             return new ResponseEntity<>(Collections.singletonMap("msg", "Password changed successfully!"), HttpStatus.OK);
         } else {
