@@ -53,8 +53,8 @@ public class ChangePasswordService {
         return false;
     }
 
-    public boolean changePassword(String email, String newPassword) {
-        Optional<Customer> optCustomer = customerRepository.findByEmail(email);
+    public boolean changePassword(String id, String newPassword) {
+        Optional<Customer> optCustomer = customerRepository.findById(id);
         if(optCustomer.isPresent()){
             Customer customer = optCustomer.get();
             if (passwordEncoder.matches(newPassword, customer.getPassword())) return false;
