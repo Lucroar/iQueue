@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class CategoryImage {
     @Id
-    private String id;
+    private String category_id;
     private Category category;
     private String imageURL;
 

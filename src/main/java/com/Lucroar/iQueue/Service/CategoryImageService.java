@@ -6,6 +6,7 @@ import com.Lucroar.iQueue.Repository.CategoryImageRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class CategoryImageService {
@@ -18,9 +19,13 @@ public class CategoryImageService {
         this.s3Service = s3Service;
     }
 
-    public CategoryImage save(CategoryImageDTO categoryImage) throws IOException {
+    public CategoryImage createCategory(CategoryImageDTO categoryImage) throws IOException {
         String imageURl = s3Service.uploadFile(categoryImage.getImage());
         CategoryImage categoryImageEntity = new CategoryImage(categoryImage.getCategory(), imageURl);
         return categoryImageRepository.save(categoryImageEntity);
+    }
+
+    public List<CategoryImage> getAllCategoryImages() {
+        return categoryImageRepository.findAll();
     }
 }
