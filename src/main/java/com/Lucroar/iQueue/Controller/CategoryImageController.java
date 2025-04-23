@@ -3,14 +3,12 @@ package com.Lucroar.iQueue.Controller;
 import com.Lucroar.iQueue.DTO.CategoryImageDTO;
 import com.Lucroar.iQueue.Service.CategoryImageService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@RestController("/category")
+@RestController()
+@RequestMapping("/category")
 public class CategoryImageController {
     private final CategoryImageService categoryImageService;
 
@@ -18,9 +16,9 @@ public class CategoryImageController {
         this.categoryImageService = categoryImageService;
     }
 
-    @PutMapping("/create")
-    public ResponseEntity<?> newCategoryImage(@RequestBody CategoryImageDTO categoryImage) throws IOException {
-        return ResponseEntity.ok(categoryImageService.createCategory(categoryImage));
+    @PostMapping ("/add")
+    public ResponseEntity<?> addCategoryImage(@ModelAttribute CategoryImageDTO categoryImage) throws IOException {
+        return ResponseEntity.ok(categoryImageService.addCategory(categoryImage));
     }
 
     @GetMapping("/all")

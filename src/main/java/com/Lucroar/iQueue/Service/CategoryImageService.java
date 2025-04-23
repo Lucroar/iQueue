@@ -19,7 +19,7 @@ public class CategoryImageService {
         this.s3Service = s3Service;
     }
 
-    public CategoryImage createCategory(CategoryImageDTO categoryImage) throws IOException {
+    public CategoryImage addCategory(CategoryImageDTO categoryImage) throws IOException {
         String imageURl = s3Service.uploadFile(categoryImage.getImage());
         CategoryImage categoryImageEntity = new CategoryImage(categoryImage.getCategory(), imageURl);
         return categoryImageRepository.save(categoryImageEntity);
