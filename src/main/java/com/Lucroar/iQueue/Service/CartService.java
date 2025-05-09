@@ -9,6 +9,7 @@ import com.Lucroar.iQueue.Repository.CartRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,17 +23,59 @@ public class CartService {
 
     //Update for menu parameter
     public Cart addToCart(Customer customer, List<Order> orderList){
-        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getCustomer_id());
+        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getCustomerId());
 
-        Cart cart;
-        if(cartOpt.isPresent()){
-            cart = cartOpt.get();
-        } else {
-            cart = new Cart();
-            cart.setCustomer(new CustomerDTO(customer));
-            cart.setOrders(new ArrayList<>());
+        Cart cart = cartOpt.orElseGet(() -> {
+            Cart newCart = new Cart();
+            newCart.setCustomer(new CustomerDTO(customer));
+            newCart.setOrders(new ArrayList<>());
+            return newCart;
+        });
+
+        List<Order> existingOrders = cart.getOrders();
+
+        for (Order newOrder : orderList) {
+            boolean found = false;
+            for (Order existingOrder : existingOrders) {
+                if (existingOrder.getProduct_id().equals(newOrder.getProduct_id())) {
+                    existingOrder.setQuantity(existingOrder.getQuantity() + newOrder.getQuantity());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                existingOrders.add(newOrder);
+            }
         }
-        cart.getOrders().addAll(orderList);
+
+        return cartRepository.save(cart);
+    }
+
+    public List<Order> viewOrder(Customer customer){
+        return cartRepository.findByCustomer_customerId(customer.getCustomerId())
+                .map(Cart::getOrders)
+                .orElse(Collections.emptyList());
+    }
+
+    public Cart updateCartQuantity(Customer customer, String orderId, String action){
+        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getCustomerId());
+
+        if (cartOpt.isEmpty()) {
+            throw new RuntimeException("Cart not found for customer ID: " + customer.getCustomerId());
+        }
+
+        Cart cart = cartOpt.get();
+
+        for (Order order : cart.getOrders()) {
+            if (order.getProduct_id().equals(orderId)) {
+                switch (action) {
+                    case "add" -> order.setQuantity(order.getQuantity() + 1);
+                    case "deduct" -> order.setQuantity(order.getQuantity() - 1);
+                }
+                break;
+            }
+        }
+
         return cartRepository.save(cart);
     }
 }
