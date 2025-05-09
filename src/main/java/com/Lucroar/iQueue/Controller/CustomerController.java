@@ -44,16 +44,19 @@ public class CustomerController {
 
     @GetMapping("/view-profile")
     public ResponseEntity<CustomerDTO> getProfile(@AuthenticationPrincipal Customer customer) {
-        Customer customerCont = customerService.findCustomerById(customer.getCustomer_id());
+        Customer customerCont = customerService.findCustomerById(customer.getCustomerId());
         CustomerDTO customerDTO = new CustomerDTO(customerCont);
         return ResponseEntity.ok(customerDTO);
     }
 
     @PatchMapping("/update-profile")
     public ResponseEntity<?> updateProfile(@AuthenticationPrincipal Customer customer, @RequestBody CustomerDTO customerDTO) {
-        customerDTO.setCustomer_id(customer.getCustomer_id());
-        if (checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername()) != null) {
-            return checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername());
+        customerDTO.setCustomerId(customer.getCustomerId());
+        if (customerService.existingEmailIgnoreId(customer.getEmail(), customerDTO.getCustomerId())) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
+        }
+        if (customerService.existingUsernameIgnoreId(customer.getUsername(), customerDTO.getCustomerId())) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
         }
         return ResponseEntity.ok(customerService.updateCustomer(customerDTO));
     }
@@ -78,8 +81,11 @@ public class CustomerController {
 
     @PostMapping("/register")
     public ResponseEntity<?> newCustomer(@RequestBody Customer customer) {
-        if (checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername()) != null) {
-            return checkExistingEmailAndUsername(customer.getEmail(), customer.getUsername());
+        if (customerService.existingEmail(customer.getEmail())) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
+        }
+        if (customerService.existingUsername(customer.getUsername())) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
         }
         userDetailService.createUser(customer);
         return ResponseEntity.ok(customer);
@@ -113,21 +119,11 @@ public class CustomerController {
 
     @PatchMapping("/change-password")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal Customer customer, @RequestBody ChangePasswordDTO request){
-        boolean success = changePasswordService.changePassword(customer.getCustomer_id(), request.getNewPassword());
+        boolean success = changePasswordService.changePassword(customer.getCustomerId(), request.getNewPassword());
         if (success) {
             return new ResponseEntity<>(Collections.singletonMap("msg", "Password changed successfully!"), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(Collections.singletonMap("msg", "Password cannot be changed to current password."), HttpStatus.BAD_REQUEST);
         }
-    }
-
-    private ResponseEntity<Map<String, String>> checkExistingEmailAndUsername(String email, String username) {
-        if (customerService.existingEmail(email)) {
-            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
-        }
-        if (customerService.existingUsername(username)) {
-            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
-        }
-        return null;
     }
 }
