@@ -1,10 +1,14 @@
 package com.Lucroar.iQueue.Entity;
 
 public enum Status {
-    CREATED,
+//    CREATED,
     WAITING,
     SERVING,
     SEATED,
     CANCELLED,
-    MISSED
+    MISSED,
+
+    //Table
+    OCCUPIED,
+    AVAILABLE
 }
