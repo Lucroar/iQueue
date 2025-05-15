@@ -3,7 +3,7 @@ package com.Lucroar.iQueue.Service;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.DTO.QueueDTO;
 import com.Lucroar.iQueue.Entity.Customer;
-import com.Lucroar.iQueue.Entity.Queue;
+import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
@@ -29,7 +29,7 @@ public class QueueService {
     }
 
     //A qr code contains the number of table and the username
-    public QueueDTO  createQueue(Customer customer, Queue queue) {
+    public QueueDTO  createQueue(Customer customer, QueueEntry queueEntry) {
         QueueDTO queueDTO = checkQueue(customer);
         if (queueDTO != null) return null;
         Customer customerCont = customerRepository.findByUsername(customer.getUsername()).get();
@@ -37,39 +37,40 @@ public class QueueService {
         customerDTO.setCustomer_id(customerCont.getCustomer_id());
         customerDTO.setUsername(customer.getUsername());
 
-        queue.setQueueing_number(sequenceGenerator.generateQueueCode(queue.getNum_people()));
-        queue.setCustomer(customerDTO);
-        queue.setStatus(Status.CREATED);
-        queue.setWaiting_since(LocalDateTime.now());
-        Queue queueEntity = queueRepository.save(queue);
-        return new QueueDTO(queueEntity);
+        queueEntry.setQueueing_number(sequenceGenerator.generateQueueCode(queueEntry.getNum_people()));
+        queueEntry.setCustomer(customerDTO);
+        queueEntry.setStatus(Status.WAITING);
+        queueEntry.setWaiting_since(LocalDateTime.now());
+        QueueEntry queueEntryEntity = queueRepository.save(queueEntry);
+        return new QueueDTO(queueEntryEntity);
     }
 
     //Check if there is an existing queue to a customer
     public QueueDTO checkQueue(Customer customer) {
         List<Status> targetStatuses = Arrays.asList(Status.CREATED, Status.WAITING);
-        Optional<Queue> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), targetStatuses);
+        Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), targetStatuses);
         return queueCont.map(QueueDTO::new).orElse(null);
     }
 
-    public QueueDTO enterQueue(QueueDTO queue) {
-        Optional<Queue> queueCont = queueRepository.findById(queue.getQueue_id());
-        if (queueCont.isPresent()) {
-            Queue queueEntity = queueCont.get();
-            queueEntity.setStatus(Status.WAITING);
-            queueRepository.save(queueEntity);
-            return new QueueDTO(queueEntity);
-        }
-        return null;
-    }
+//    Used to be called after queue is created
+//    public QueueDTO enterQueue(QueueDTO queue) {
+//        Optional<QueueEntry> queueCont = queueRepository.findById(queue.getQueue_id());
+//        if (queueCont.isPresent()) {
+//            QueueEntry queueEntity = queueCont.get();
+//            queueEntity.setStatus(Status.WAITING);
+//            queueRepository.save(queueEntity);
+//            return new QueueDTO(queueEntity);
+//        }
+//        return null;
+//    }
 
     public QueueDTO cancelQueue(QueueDTO queue) {
-        Optional<Queue> queueCont = queueRepository.findById(queue.getQueue_id());
+        Optional<QueueEntry> queueCont = queueRepository.findById(queue.getQueue_id());
         if (queueCont.isPresent()) {
-            Queue queueEntity = queueCont.get();
-            queueEntity.setStatus(Status.CANCELLED);
-            queueRepository.save(queueEntity);
-            return new QueueDTO(queueEntity);
+            QueueEntry queueEntryEntity = queueCont.get();
+            queueEntryEntity.setStatus(Status.CANCELLED);
+            queueRepository.save(queueEntryEntity);
+            return new QueueDTO(queueEntryEntity);
         }
         return null;
     }

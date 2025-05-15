@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Document(collection = "Queue")
 @Data
-public class Queue {
+public class QueueEntry {
     @Id
     private String queue_id;
     private CustomerDTO customer;

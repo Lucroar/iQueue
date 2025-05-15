@@ -1,6 +1,6 @@
 package com.Lucroar.iQueue.DTO;
 
-import com.Lucroar.iQueue.Entity.Queue;
+import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -17,10 +17,10 @@ public class QueueDTO {
     private int num_people;
     private Status status;
 
-    public QueueDTO(Queue queue) {
-        this.queue_id = queue.getQueue_id();
-        this.queueing_number = queue.getQueueing_number();
-        this.num_people = queue.getNum_people();
-        this.status = queue.getStatus();
+    public QueueDTO(QueueEntry queueEntry) {
+        this.queue_id = queueEntry.getQueue_id();
+        this.queueing_number = queueEntry.getQueueing_number();
+        this.num_people = queueEntry.getNum_people();
+        this.status = queueEntry.getStatus();
     }
 }
