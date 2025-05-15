@@ -34,7 +34,7 @@ public class QueueService {
         if (queueDTO != null) return null;
         Customer customerCont = customerRepository.findByUsername(customer.getUsername()).get();
         CustomerDTO customerDTO = new CustomerDTO();
-        customerDTO.setCustomer_id(customerCont.getCustomer_id());
+        customerDTO.setCustomerId(customerCont.getCustomerId());
         customerDTO.setUsername(customer.getUsername());
 
         queueEntry.setQueueing_number(sequenceGenerator.generateQueueCode(queueEntry.getNum_people()));

@@ -7,9 +7,6 @@ import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Repository.ReservationRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,7 +20,7 @@ public class ReservationService {
         Reservation reserved = checkReservation(customer);
         if (reserved != null) return null;
         CustomerDTO customerDTO = new CustomerDTO(customer);
-        customerDTO.setCustomer_id(customer.getCustomer_id());
+        customerDTO.setCustomerId(customer.getCustomerId());
         customerDTO.setUsername(customer.getUsername());
         reservation.setCustomer(customerDTO);
         reservation.setStatus(Status.CREATED);

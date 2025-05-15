@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "Cart")
@@ -18,6 +19,9 @@ public class Cart {
     private List<Order> orders;
 
     public void addOrder(Order order) {
+        if (orders == null) {
+            orders = new ArrayList<>();
+        }
         orders.add(order);
     }
 }

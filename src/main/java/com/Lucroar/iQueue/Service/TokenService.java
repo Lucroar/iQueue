@@ -37,7 +37,7 @@ public class TokenService {
         String userId;
 
         if (principal instanceof Customer customer) {
-            userId = customer.getCustomer_id();
+            userId = customer.getCustomerId();
         } else if (principal instanceof Cashier cashier) {
             userId = cashier.getCashier_id();
         } else {
