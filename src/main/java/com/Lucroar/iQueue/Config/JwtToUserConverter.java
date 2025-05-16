@@ -32,7 +32,7 @@ public class JwtToUserConverter implements Converter<Jwt, UsernamePasswordAuthen
         } else {
             Customer customer = new Customer();
             customer.setUsername(source.getClaimAsString("sub"));
-            customer.setCustomerId(source.getClaimAsString("userId"));
+            customer.setId(source.getClaimAsString("userId"));
             return new UsernamePasswordAuthenticationToken(customer, source, authorities);
         }
     }

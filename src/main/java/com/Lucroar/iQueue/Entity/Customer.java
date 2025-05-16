@@ -18,7 +18,7 @@ import java.util.Collections;
 @Data
 public class Customer implements UserDetails {
     @Id
-    private String customerId;
+    private String id;
     private String first_name;
     private String last_name;
     private String email;

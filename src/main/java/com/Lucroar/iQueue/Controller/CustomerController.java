@@ -44,18 +44,19 @@ public class CustomerController {
 
     @GetMapping("/view-profile")
     public ResponseEntity<CustomerDTO> getProfile(@AuthenticationPrincipal Customer customer) {
-        Customer customerCont = customerService.findCustomerById(customer.getCustomerId());
+        Customer customerCont = customerService.findCustomerById(customer.getId());
         CustomerDTO customerDTO = new CustomerDTO(customerCont);
         return ResponseEntity.ok(customerDTO);
     }
 
     @PatchMapping("/update-profile")
     public ResponseEntity<?> updateProfile(@AuthenticationPrincipal Customer customer, @RequestBody CustomerDTO customerDTO) {
-        customerDTO.setCustomerId(customer.getCustomerId());
-        if (customerService.existingEmailIgnoreId(customer.getEmail(), customerDTO.getCustomerId())) {
+        customerDTO.setCustomerId(customer.getId());
+        if (customerService.existingEmailIgnoreId(customerDTO.getEmail(), customerDTO.getCustomerId())) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Email already in use"));
         }
-        if (customerService.existingUsernameIgnoreId(customer.getUsername(), customerDTO.getCustomerId())) {
+
+        if (customerService.existingUsernameIgnoreId(customerDTO.getUsername(), customerDTO.getCustomerId())) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username already in use"));
         }
         return ResponseEntity.ok(customerService.updateCustomer(customerDTO));
@@ -119,7 +120,7 @@ public class CustomerController {
 
     @PatchMapping("/change-password")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal Customer customer, @RequestBody ChangePasswordDTO request){
-        boolean success = changePasswordService.changePassword(customer.getCustomerId(), request.getNewPassword());
+        boolean success = changePasswordService.changePassword(customer.getId(), request.getNewPassword());
         if (success) {
             return new ResponseEntity<>(Collections.singletonMap("msg", "Password changed successfully!"), HttpStatus.OK);
         } else {
