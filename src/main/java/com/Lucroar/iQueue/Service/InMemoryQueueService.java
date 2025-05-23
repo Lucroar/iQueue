@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.SeatedTableInfo;
 import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Entity.Table;
@@ -17,15 +18,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class InMemoryQueueService {
     private final TableRepository tableRepository;
     private final QueueRepository queueRepository;
+    private final WebSocketPublisher webSocketPublisher;
     private final Map<Integer, Queue<QueueEntry>> queuesByTier = new ConcurrentHashMap<>();
 
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
     @Getter
     private List<Table> allTables;
 
-    public InMemoryQueueService(TableRepository tableRepository, QueueRepository queueRepository) {
+    public InMemoryQueueService(TableRepository tableRepository, QueueRepository queueRepository, WebSocketPublisher webSocketPublisher) {
         this.tableRepository = tableRepository;
         this.queueRepository = queueRepository;
+        this.webSocketPublisher = webSocketPublisher;
         init();
     }
 
@@ -66,12 +69,20 @@ public class InMemoryQueueService {
                     nextEntry.setStatus(Status.SEATED);
                     nextEntry.setTable_number(table.getTableNumber());
                     queueRepository.save(nextEntry);
-
-                    // Optionally assign tableId to QueueEntry
+                    sendSeatedTableInfo(nextEntry, table);
                     return;
                 }
             }
         }
+    }
+
+    private void sendSeatedTableInfo(QueueEntry entry, Table table) {
+        String tier = String.valueOf(findAppropriateTableTier(entry.getNum_people()));
+        SeatedTableInfo info = new SeatedTableInfo(
+                table.getTableNumber(),
+                entry.getQueueing_number()
+        );
+        webSocketPublisher.sendSeatedTableInfo(tier , info);
     }
 
     private QueueEntry getNextQueueEntryFitting(int tableSize) {
