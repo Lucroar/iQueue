@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.CartDTO;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.Entity.Cart;
 import com.Lucroar.iQueue.Entity.Customer;
@@ -56,7 +57,7 @@ public class CartService {
                 .orElse(Collections.emptyList());
     }
 
-    public Cart updateCartQuantity(Customer customer, String orderId, String action){
+    public Cart updateCartQuantity(Customer customer, CartDTO cartDTO){
         Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getId());
 
         if (cartOpt.isEmpty()) {
@@ -66,14 +67,26 @@ public class CartService {
         Cart cart = cartOpt.get();
 
         for (Order order : cart.getOrders()) {
-            if (order.getProduct_id().equals(orderId)) {
-                switch (action) {
+            if (order.getProduct_id().equals(cartDTO.getMenuId())) {
+                switch (cartDTO.getAction()) {
                     case "add" -> order.setQuantity(order.getQuantity() + 1);
                     case "deduct" -> order.setQuantity(order.getQuantity() - 1);
                 }
                 break;
             }
         }
+
+        return cartRepository.save(cart);
+    }
+
+    public Cart deleteOrder(Customer customer, CartDTO cartDTO){
+        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getId());
+        if (cartOpt.isEmpty()) {
+            throw new RuntimeException("Cart not found for customer ID: " + customer.getId());
+        }
+
+        Cart cart = cartOpt.get();
+        cart.getOrders().removeIf(order -> order.getProduct_id().equals(cartDTO.getMenuId()));
 
         return cartRepository.save(cart);
     }

@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Controller;
 
+import com.Lucroar.iQueue.DTO.CartDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.Order;
 import com.Lucroar.iQueue.Service.CartService;
@@ -28,9 +29,13 @@ public class CartController {
         return ResponseEntity.ok(cartService.viewOrder( customer ));
     }
 
-    @PatchMapping("/update/{menuId}/{action}")
-    public ResponseEntity<?> updateOrderQuantity(@AuthenticationPrincipal Customer customer, @PathVariable String menuId,
-                                                 @PathVariable String action) {
-        return ResponseEntity.ok(cartService.updateCartQuantity(customer, menuId, action));
+    @PatchMapping("/update")
+    public ResponseEntity<?> updateOrderQuantity(@AuthenticationPrincipal Customer customer, @RequestBody CartDTO cartDTO) {
+        return ResponseEntity.ok(cartService.updateCartQuantity(customer, cartDTO));
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteCart(@AuthenticationPrincipal Customer customer, @RequestBody CartDTO cartDTO) {
+        return ResponseEntity.ok(cartService.deleteOrder(customer, cartDTO));
     }
 }
