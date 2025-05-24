@@ -36,7 +36,7 @@ public class CustomerService {
     public CustomerDTO updateCustomer(CustomerDTO customerDTO) {
         Customer customer = customerRepository.findById(customerDTO.getCustomerId()).orElse(null);
         if (customer != null) {
-            customer.setCustomerId(customerDTO.getCustomerId());
+            customer.setId(customerDTO.getCustomerId());
             customer.setUsername(customerDTO.getUsername());
             customer.setEmail(customerDTO.getEmail());
             customer.setFirst_name(customerDTO.getFirst_Name());
@@ -55,10 +55,10 @@ public class CustomerService {
     }
 
     public boolean existingUsernameIgnoreId(String username, String id) {
-        return customerRepository.findByUsernameAndCustomerIdNot(username, id).isPresent();
+        return customerRepository.findByUsernameAndIdNot(username, id).isPresent();
     }
 
     public boolean existingEmailIgnoreId(String email, String id) {
-        return customerRepository.findByEmailAndCustomerIdNot(email, id).isPresent();
+        return customerRepository.findByEmailAndIdNot(email, id).isPresent();
     }
 }

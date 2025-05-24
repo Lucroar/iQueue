@@ -1,9 +1,9 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.CartDTO;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.Entity.Cart;
 import com.Lucroar.iQueue.Entity.Customer;
-import com.Lucroar.iQueue.Entity.Menu;
 import com.Lucroar.iQueue.Entity.Order;
 import com.Lucroar.iQueue.Repository.CartRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class CartService {
 
     //Update for menu parameter
     public Cart addToCart(Customer customer, List<Order> orderList){
-        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getCustomerId());
+        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getId());
 
         Cart cart = cartOpt.orElseGet(() -> {
             Cart newCart = new Cart();
@@ -52,29 +52,41 @@ public class CartService {
     }
 
     public List<Order> viewOrder(Customer customer){
-        return cartRepository.findByCustomer_customerId(customer.getCustomerId())
+        return cartRepository.findByCustomer_customerId(customer.getId())
                 .map(Cart::getOrders)
                 .orElse(Collections.emptyList());
     }
 
-    public Cart updateCartQuantity(Customer customer, String orderId, String action){
-        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getCustomerId());
+    public Cart updateCartQuantity(Customer customer, CartDTO cartDTO){
+        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getId());
 
         if (cartOpt.isEmpty()) {
-            throw new RuntimeException("Cart not found for customer ID: " + customer.getCustomerId());
+            throw new RuntimeException("Cart not found for customer ID: " + customer.getId());
         }
 
         Cart cart = cartOpt.get();
 
         for (Order order : cart.getOrders()) {
-            if (order.getProduct_id().equals(orderId)) {
-                switch (action) {
+            if (order.getProduct_id().equals(cartDTO.getMenuId())) {
+                switch (cartDTO.getAction()) {
                     case "add" -> order.setQuantity(order.getQuantity() + 1);
                     case "deduct" -> order.setQuantity(order.getQuantity() - 1);
                 }
                 break;
             }
         }
+
+        return cartRepository.save(cart);
+    }
+
+    public Cart deleteOrder(Customer customer, CartDTO cartDTO){
+        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getId());
+        if (cartOpt.isEmpty()) {
+            throw new RuntimeException("Cart not found for customer ID: " + customer.getId());
+        }
+
+        Cart cart = cartOpt.get();
+        cart.getOrders().removeIf(order -> order.getProduct_id().equals(cartDTO.getMenuId()));
 
         return cartRepository.save(cart);
     }

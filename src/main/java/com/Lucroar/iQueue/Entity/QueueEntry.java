@@ -17,4 +17,6 @@ public class QueueEntry {
     private Status status;
     private LocalDateTime waiting_since;
     private int num_people;
+    private LocalDateTime time_seated;
+    private int table_number;
 }

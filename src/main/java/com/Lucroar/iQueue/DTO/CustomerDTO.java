@@ -17,7 +17,7 @@ public class CustomerDTO {
     private String password;
 
     public CustomerDTO(Customer customer) {
-        this.customerId = customer.getCustomerId();
+        this.customerId = customer.getId();
         this.username = customer.getUsername();
         this.first_Name = customer.getFirst_name();
         this.last_Name = customer.getLast_name();

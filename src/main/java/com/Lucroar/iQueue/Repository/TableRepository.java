@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface TableRepository extends MongoRepository <Table, String>{
     List<Table> findAllBySize(int size);
+    Table findByTableNumber(int tableNumber);
 }

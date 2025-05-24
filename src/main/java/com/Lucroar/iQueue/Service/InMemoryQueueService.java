@@ -1,10 +1,13 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.SeatedTableInfo;
 import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Entity.Table;
+import com.Lucroar.iQueue.Repository.QueueRepository;
 import com.Lucroar.iQueue.Repository.TableRepository;
 import lombok.Getter;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -14,20 +17,24 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Service
 public class InMemoryQueueService {
     private final TableRepository tableRepository;
-    @Getter
+    private final QueueRepository queueRepository;
+    private final WebSocketPublisher webSocketPublisher;
     private final Map<Integer, Queue<QueueEntry>> queuesByTier = new ConcurrentHashMap<>();
-    private final Set<Integer> occupiedTables = Collections.synchronizedSet(new HashSet<>());
 
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
+    @Getter
     private List<Table> allTables;
 
-    public InMemoryQueueService(TableRepository tableRepository) {
+    public InMemoryQueueService(TableRepository tableRepository, QueueRepository queueRepository, WebSocketPublisher webSocketPublisher) {
         this.tableRepository = tableRepository;
+        this.queueRepository = queueRepository;
+        this.webSocketPublisher = webSocketPublisher;
         init();
     }
 
     private void init() {
-        allTables = tableRepository.findAll();
+        allTables = tableRepository.findAll(); // Load table structure
+
         // Initialize queue for each tier
         for (int tier : tableTiers) {
             queuesByTier.put(tier, new ConcurrentLinkedQueue<>());
@@ -43,7 +50,12 @@ public class InMemoryQueueService {
         }
     }
 
-    public QueueEntry seatNextAvailable() {
+    @Scheduled (fixedRate = 5000) // Runs every 5 seconds
+    public void autoSeatCustomers() {
+        seatNextAvailable();
+    }
+
+    public void seatNextAvailable() {
         List<Table> tables = tableRepository.findAll(); // Reload from DB
 
         for (Table table : tables) {
@@ -54,13 +66,23 @@ public class InMemoryQueueService {
                     // Mark table as occupied
                     table.setStatus(Status.OCCUPIED);
                     tableRepository.save(table);
-
-                    // Optionally assign tableId to QueueEntry
-                    return nextEntry;
+                    nextEntry.setStatus(Status.SEATED);
+                    nextEntry.setTable_number(table.getTableNumber());
+                    queueRepository.save(nextEntry);
+                    sendSeatedTableInfo(nextEntry, table);
+                    return;
                 }
             }
         }
-        return null;
+    }
+
+    private void sendSeatedTableInfo(QueueEntry entry, Table table) {
+        String tier = String.valueOf(findAppropriateTableTier(entry.getNum_people()));
+        SeatedTableInfo info = new SeatedTableInfo(
+                table.getTableNumber(),
+                entry.getQueueing_number()
+        );
+        webSocketPublisher.sendSeatedTableInfo(tier , info);
     }
 
     private QueueEntry getNextQueueEntryFitting(int tableSize) {
@@ -80,15 +102,6 @@ public class InMemoryQueueService {
         return null;
     }
 
-    public void releaseTable(String tableId) {
-        Optional<Table> tableOpt = tableRepository.findById(tableId);
-        if (tableOpt.isPresent()) {
-            Table table = tableOpt.get();
-            table.setStatus(Status.AVAILABLE);
-            tableRepository.save(table);
-        }
-    }
-
     private int findAppropriateTableTier(int numPeople) {
         for (int tier : tableTiers) {
             if (numPeople <= tier) return tier;
@@ -96,8 +109,13 @@ public class InMemoryQueueService {
         return -1;
     }
 
-    public List<Table> getAllTables() {
-        return tableRepository.findAll();
+    public void releaseTable(int tableNumber) {
+        Table table = tableRepository.findByTableNumber(tableNumber);
+        if (table != null) {
+            table.setStatus(Status.DIRTY);
+            tableRepository.save(table);
+            seatNextAvailable(); // Try to seat someone right away
+        }
     }
 
 }

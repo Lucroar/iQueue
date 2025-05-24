@@ -42,4 +42,9 @@ public class QueueController {
     public ResponseEntity<?> cancelQueue(@RequestBody QueueDTO queue) {
         return ResponseEntity.ok(queueService.cancelQueue(queue));
     }
+
+    @PatchMapping("/done")
+    public ResponseEntity<?> doneQueue(@AuthenticationPrincipal Customer customer) {
+        return ResponseEntity.ok(queueService.finishedQueue(customer));
+    }
 }

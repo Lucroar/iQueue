@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/cashier/new-cashier", "/cashier/login", "/cashier/hello").permitAll()
                         .requestMatchers( "/customer/register", "customer/login", "customer/send-otp",
                                 "customer/verify-otp").permitAll()
+                        .requestMatchers("/queue-websocket/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

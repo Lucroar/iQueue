@@ -20,7 +20,7 @@ public class ReservationService {
         Reservation reserved = checkReservation(customer);
         if (reserved != null) return null;
         CustomerDTO customerDTO = new CustomerDTO(customer);
-        customerDTO.setCustomerId(customer.getCustomerId());
+        customerDTO.setCustomerId(customer.getId());
         customerDTO.setUsername(customer.getUsername());
         reservation.setCustomer(customerDTO);
         reservation.setStatus(Status.CREATED);
