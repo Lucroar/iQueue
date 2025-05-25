@@ -4,6 +4,8 @@ import com.Lucroar.iQueue.Entity.Table;
 import com.Lucroar.iQueue.Repository.TableRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TableService {
     private final TableRepository tableRepository;
@@ -14,5 +16,9 @@ public class TableService {
 
     public Table addTable(Table table) {
         return tableRepository.save(table);
+    }
+
+    public List<Table> getAllTable(){
+        return tableRepository.findAll();
     }
 }

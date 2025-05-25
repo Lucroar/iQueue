@@ -3,10 +3,7 @@ package com.Lucroar.iQueue.Controller;
 import com.Lucroar.iQueue.Entity.Table;
 import com.Lucroar.iQueue.Service.TableService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/table")
@@ -20,5 +17,10 @@ public class TableController {
     @PostMapping("/new-table")
     public ResponseEntity<?> newTable(@RequestBody Table table) {
         return ResponseEntity.ok(tableService.addTable(table));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllTables() {
+        return ResponseEntity.ok(tableService.getAllTable());
     }
 }
