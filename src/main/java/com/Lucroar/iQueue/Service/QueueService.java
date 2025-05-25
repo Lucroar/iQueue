@@ -10,6 +10,7 @@ import com.Lucroar.iQueue.Repository.QueueRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ public class QueueService {
     private final CustomerRepository customerRepository;
     private final DailySequenceGeneratorService sequenceGenerator;
     private final InMemoryQueueService inMemoryQueueService;
+    private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
 
     public QueueService(QueueRepository queueRepository,
                         CustomerRepository customerRepository,
@@ -44,7 +46,9 @@ public class QueueService {
         queueEntry.setWaiting_since(LocalDateTime.now());
         QueueEntry queueEntryEntity = queueRepository.save(queueEntry);
         inMemoryQueueService.enqueue(queueEntryEntity);
-        return new QueueDTO(queueEntryEntity);
+        QueueDTO queue = new QueueDTO(queueEntryEntity);
+        queue.setTier(findAppropriateTableTier(queueEntry.getNum_people()));
+        return queue;
     }
 
     //Check if there is an existing queue to a customer
@@ -89,5 +93,12 @@ public class QueueService {
 
         }
         return null;
+    }
+
+    private int findAppropriateTableTier(int numPeople) {
+        for (int tier : tableTiers) {
+            if (numPeople <= tier) return tier;
+        }
+        return -1;
     }
 }

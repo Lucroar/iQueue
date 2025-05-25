@@ -16,6 +16,7 @@ public class QueueDTO {
     private String queueing_number;
     private int num_people;
     private Status status;
+    private int tier;
 
     public QueueDTO(QueueEntry queueEntry) {
         this.queue_id = queueEntry.getQueue_id();
