@@ -30,4 +30,9 @@ public class MenuController {
     public ResponseEntity<?> viewItem(@PathVariable String menuId){
         return ResponseEntity.ok(menuService.findById(menuId));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> allMenus() {
+        return ResponseEntity.ok(menuService.getAllMenus());
+    }
 }
