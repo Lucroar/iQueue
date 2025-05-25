@@ -8,10 +8,7 @@ import com.Lucroar.iQueue.Entity.Order;
 import com.Lucroar.iQueue.Repository.CartRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CartService {
@@ -66,11 +63,20 @@ public class CartService {
 
         Cart cart = cartOpt.get();
 
-        for (Order order : cart.getOrders()) {
+        Iterator<Order> iterator = cart.getOrders().iterator();
+        while (iterator.hasNext()) {
+            Order order = iterator.next();
             if (order.getProduct_id().equals(cartDTO.getMenuId())) {
                 switch (cartDTO.getAction()) {
                     case "add" -> order.setQuantity(order.getQuantity() + 1);
-                    case "deduct" -> order.setQuantity(order.getQuantity() - 1);
+                    case "deduct" -> {
+                        int newQuantity = order.getQuantity() - 1;
+                        if (newQuantity <= 0) {
+                            iterator.remove(); // Removes order from cart
+                        } else {
+                            order.setQuantity(newQuantity);
+                        }
+                    }
                 }
                 break;
             }
@@ -89,5 +95,21 @@ public class CartService {
         cart.getOrders().removeIf(order -> order.getProduct_id().equals(cartDTO.getMenuId()));
 
         return cartRepository.save(cart);
+    }
+
+    public List<Order> checkout(Customer customer){
+        Optional<Cart> cartOpt = cartRepository.findByCustomer_customerId(customer.getId());
+        if (cartOpt.isEmpty()) {
+            throw new RuntimeException("Cart not found for customer ID: " + customer.getId());
+        }
+
+        Cart cart = cartOpt.get();
+        List<Order> ordersToCheckout = new ArrayList<>(cart.getOrders());
+
+        // Clear the cart
+        cart.setOrders(new ArrayList<>());
+        cartRepository.save(cart);
+
+        return ordersToCheckout;
     }
 }
