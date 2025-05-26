@@ -81,9 +81,13 @@ public class CartService {
             Order order = iterator.next();
             if (order.getProduct_id().equals(cartDTO.getMenuId())) {
                 switch (cartDTO.getAction()) {
-                    case "add" -> order.setQuantity(order.getQuantity() + 1);
+                    case "add" -> {
+                        order.setQuantity(order.getQuantity() + 1);
+                        cart.setTotal(cart.getTotal() + order.getPrice());
+                    }
                     case "deduct" -> {
                         int newQuantity = order.getQuantity() - 1;
+                        cart.setTotal(cart.getTotal() - order.getPrice());
                         if (newQuantity <= 0) {
                             iterator.remove(); // Removes order from cart
                         } else {
@@ -106,7 +110,10 @@ public class CartService {
 
         Cart cart = cartOpt.get();
         cart.getOrders().removeIf(order -> order.getProduct_id().equals(cartDTO.getMenuId()));
-
+        int newTotal = cart.getOrders().stream()
+                .mapToInt(Order::getPrice)
+                .sum();
+        cart.setTotal(newTotal);
         return cartRepository.save(cart);
     }
 
