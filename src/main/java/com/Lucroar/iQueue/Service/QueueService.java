@@ -1,12 +1,14 @@
 package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CustomerDTO;
+import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +23,8 @@ public class QueueService {
     private final DailySequenceGeneratorService sequenceGenerator;
     private final InMemoryQueueService inMemoryQueueService;
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
+    @Getter
+    private final String accessCode = "x9j3b7qt2a0e";
 
     public QueueService(QueueRepository queueRepository,
                         CustomerRepository customerRepository,
@@ -32,7 +36,7 @@ public class QueueService {
         this.inMemoryQueueService = inMemoryQueueService;
     }
 
-    public QueueDTO  createQueue(Customer customer, QueueEntry queueEntry) {
+    public QueueDTO createQueue(Customer customer, QueueCreationRequest queueRequest) {
         QueueDTO queueDTO = checkQueue(customer);
         if (queueDTO != null) return null;
         Customer customerCont = customerRepository.findByUsername(customer.getUsername()).get();
@@ -40,6 +44,8 @@ public class QueueService {
         customerDTO.setCustomerId(customerCont.getId());
         customerDTO.setUsername(customer.getUsername());
 
+        QueueEntry queueEntry = new QueueEntry();
+        queueEntry.setNum_people(queueRequest.getNum_people());
         queueEntry.setQueueing_number(sequenceGenerator.generateQueueCode(queueEntry.getNum_people()));
         queueEntry.setCustomer(customerDTO);
         queueEntry.setStatus(Status.WAITING);
@@ -70,8 +76,8 @@ public class QueueService {
 //        return null;
 //    }
 
-    public QueueDTO cancelQueue(QueueDTO queue) {
-        Optional<QueueEntry> queueCont = queueRepository.findById(queue.getQueue_id());
+    public QueueDTO cancelQueue(Customer customer) {
+        Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.WAITING));
         if (queueCont.isPresent()) {
             QueueEntry queueEntryEntity = queueCont.get();
             queueEntryEntity.setStatus(Status.CANCELLED);

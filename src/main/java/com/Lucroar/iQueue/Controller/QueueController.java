@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Controller;
 
+import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.QueueEntry;
@@ -20,8 +21,15 @@ public class QueueController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createQueue(@AuthenticationPrincipal Customer customer, @RequestBody QueueEntry queueEntry) {
-        QueueDTO queueDTO = queueService.createQueue(customer, queueEntry);
+    public ResponseEntity<?> createQueue(@AuthenticationPrincipal Customer customer, @RequestBody QueueCreationRequest queueCreationRequest) {
+        if (!queueCreationRequest.getAccessCode().equals(queueService.getAccessCode())){
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Wrong Access Code"));
+        }
+        if (queueCreationRequest.getNum_people() > 6) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Number of people must not exceed 6"));
+        }
+
+        QueueDTO queueDTO = queueService.createQueue(customer, queueCreationRequest);
         if (queueDTO == null) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Already Created a QueueEntry"));
         }
@@ -39,8 +47,8 @@ public class QueueController {
     }
 
     @PatchMapping("/cancel")
-    public ResponseEntity<?> cancelQueue(@RequestBody QueueDTO queue) {
-        return ResponseEntity.ok(queueService.cancelQueue(queue));
+    public ResponseEntity<?> cancelQueue(@AuthenticationPrincipal Customer customer) {
+        return ResponseEntity.ok(queueService.cancelQueue(customer));
     }
 
     @PatchMapping("/done")
