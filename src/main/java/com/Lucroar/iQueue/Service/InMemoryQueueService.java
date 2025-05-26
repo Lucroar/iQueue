@@ -1,6 +1,7 @@
 package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.SeatedTableInfo;
+import com.Lucroar.iQueue.Entity.LastSeated;
 import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Entity.Table;
@@ -19,16 +20,21 @@ public class InMemoryQueueService {
     private final TableRepository tableRepository;
     private final QueueRepository queueRepository;
     private final WebSocketPublisher webSocketPublisher;
+    private final LastSeatedService lastSeatedService;
     private final Map<Integer, Queue<QueueEntry>> queuesByTier = new ConcurrentHashMap<>();
 
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
     @Getter
     private List<Table> allTables;
 
-    public InMemoryQueueService(TableRepository tableRepository, QueueRepository queueRepository, WebSocketPublisher webSocketPublisher) {
+    public InMemoryQueueService(TableRepository tableRepository,
+                                QueueRepository queueRepository,
+                                WebSocketPublisher webSocketPublisher,
+                                LastSeatedService lastSeatedService) {
         this.tableRepository = tableRepository;
         this.queueRepository = queueRepository;
         this.webSocketPublisher = webSocketPublisher;
+        this.lastSeatedService = lastSeatedService;
         init();
     }
 
@@ -77,12 +83,14 @@ public class InMemoryQueueService {
     }
 
     private void sendSeatedTableInfo(QueueEntry entry, Table table) {
-        String tier = String.valueOf(findAppropriateTableTier(entry.getNum_people()));
+        int tier = findAppropriateTableTier(entry.getNum_people());
         SeatedTableInfo info = new SeatedTableInfo(
                 table.getTableNumber(),
                 entry.getQueueing_number()
         );
-        webSocketPublisher.sendSeatedTableInfo(tier , info);
+        lastSeatedService.newLastSeatedByTier(new LastSeated(table.getTableNumber(),
+                entry.getQueueing_number(), tier));
+        webSocketPublisher.sendSeatedTableInfo(String.valueOf(tier) , info);
     }
 
     private QueueEntry getNextQueueEntryFitting(int tableSize) {
