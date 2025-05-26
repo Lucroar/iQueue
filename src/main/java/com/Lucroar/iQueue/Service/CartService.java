@@ -60,9 +60,10 @@ public class CartService {
 
     public CartOrdersDTO viewOrder(Customer customer){
         CartOrdersDTO cartOrdersDTO = new CartOrdersDTO();
-        Cart cartOpt = cartRepository.findByCustomer_customerId(customer.getId()).get();
-        cartOrdersDTO.setOrders(cartOpt.getOrders());
-        cartOrdersDTO.setPrice(cartOpt.getTotal());
+        Optional<Cart> cartOpt = Optional.of(cartRepository.findByCustomer_customerId(customer.getId()).orElse(new Cart()));
+        Cart cart = cartOpt.get();
+        cartOrdersDTO.setOrders(cart.getOrders());
+        cartOrdersDTO.setPrice(cart.getTotal());
         return cartOrdersDTO;
     }
 
@@ -117,6 +118,7 @@ public class CartService {
 
         Cart cart = cartOpt.get();
         List<Order> ordersToCheckout = new ArrayList<>(cart.getOrders());
+        cart.setTotal(0);
 
         // Clear the cart
         cart.setOrders(new ArrayList<>());
