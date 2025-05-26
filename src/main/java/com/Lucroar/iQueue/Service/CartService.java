@@ -1,11 +1,14 @@
 package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CartDTO;
+import com.Lucroar.iQueue.DTO.CartOrdersDTO;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.Entity.Cart;
 import com.Lucroar.iQueue.Entity.Customer;
+import com.Lucroar.iQueue.Entity.Menu;
 import com.Lucroar.iQueue.Entity.Order;
 import com.Lucroar.iQueue.Repository.CartRepository;
+import com.Lucroar.iQueue.Repository.MenuRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -13,9 +16,11 @@ import java.util.*;
 @Service
 public class CartService {
     private final CartRepository cartRepository;
+    private final MenuRepository menuRepository;
 
-    public CartService(CartRepository cartRepository) {
+    public CartService(CartRepository cartRepository, MenuRepository menuRepository) {
         this.cartRepository = cartRepository;
+        this.menuRepository = menuRepository;
     }
 
     //Update for menu parameter
@@ -32,15 +37,20 @@ public class CartService {
         List<Order> existingOrders = cart.getOrders();
 
         for (Order newOrder : orderList) {
+            Menu menuOpt = menuRepository.findById(newOrder.getProduct_id()).get();
+            newOrder.setName(menuOpt.getName());
+            newOrder.setPrice(menuOpt.getPrice());
             boolean found = false;
             for (Order existingOrder : existingOrders) {
                 if (existingOrder.getProduct_id().equals(newOrder.getProduct_id())) {
                     existingOrder.setQuantity(existingOrder.getQuantity() + newOrder.getQuantity());
+                    cart.setTotal(cart.getTotal() + menuOpt.getPrice()*newOrder.getQuantity());
                     found = true;
                     break;
                 }
             }
             if (!found) {
+                cart.setTotal(cart.getTotal() + menuOpt.getPrice()*newOrder.getQuantity());
                 existingOrders.add(newOrder);
             }
         }
@@ -48,10 +58,12 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-    public List<Order> viewOrder(Customer customer){
-        return cartRepository.findByCustomer_customerId(customer.getId())
-                .map(Cart::getOrders)
-                .orElse(Collections.emptyList());
+    public CartOrdersDTO viewOrder(Customer customer){
+        CartOrdersDTO cartOrdersDTO = new CartOrdersDTO();
+        Cart cartOpt = cartRepository.findByCustomer_customerId(customer.getId()).get();
+        cartOrdersDTO.setOrders(cartOpt.getOrders());
+        cartOrdersDTO.setPrice(cartOpt.getTotal());
+        return cartOrdersDTO;
     }
 
     public Cart updateCartQuantity(Customer customer, CartDTO cartDTO){
