@@ -16,4 +16,5 @@ public class Orders {
     private String id;
     private CustomerDTO customer;
     private List<Order> orders;
+    private int total;
 }
