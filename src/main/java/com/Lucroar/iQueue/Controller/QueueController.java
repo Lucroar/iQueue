@@ -4,6 +4,7 @@ import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.QueueEntry;
+import com.Lucroar.iQueue.Service.LastSeatedService;
 import com.Lucroar.iQueue.Service.QueueService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,9 +16,11 @@ import java.util.Collections;
 @RequestMapping("/queue")
 public class QueueController {
     private final QueueService queueService;
+    private final LastSeatedService lastSeatedService;
 
-    public QueueController(QueueService queueService) {
+    public QueueController(QueueService queueService, LastSeatedService lastSeatedService) {
         this.queueService = queueService;
+        this.lastSeatedService = lastSeatedService;
     }
 
     @PostMapping("/create")
@@ -48,11 +51,24 @@ public class QueueController {
 
     @PatchMapping("/cancel")
     public ResponseEntity<?> cancelQueue(@AuthenticationPrincipal Customer customer) {
-        return ResponseEntity.ok(queueService.cancelQueue(customer));
+        QueueDTO queueDTO = queueService.cancelQueue(customer);
+        if (queueDTO == null) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "No Waiting queue to Cancel"));
+        }
+        return ResponseEntity.ok(queueDTO);
     }
 
     @PatchMapping("/done")
     public ResponseEntity<?> doneQueue(@AuthenticationPrincipal Customer customer) {
-        return ResponseEntity.ok(queueService.finishedQueue(customer));
+        QueueDTO queueDTO = queueService.finishedQueue(customer);
+        if (queueDTO == null) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "No Seated queue to bill out"));
+        }
+        return ResponseEntity.ok(queueDTO);
+    }
+
+    @GetMapping("/last-seated/{tier}")
+    public ResponseEntity<?> getLastSeated(@PathVariable int tier) {
+        return ResponseEntity.ok(lastSeatedService.getLastSeatedByTier(tier));
     }
 }
