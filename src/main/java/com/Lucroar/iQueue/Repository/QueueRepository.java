@@ -11,4 +11,5 @@ import java.util.Optional;
 @Repository
 public interface QueueRepository extends MongoRepository<QueueEntry, String> {
     Optional<QueueEntry> findByCustomerUsernameAndStatusIn(String username, List<Status> status);
+    Optional<QueueEntry> findByCustomerUsername(String username);
 }

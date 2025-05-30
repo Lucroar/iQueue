@@ -23,4 +23,14 @@ public class TableController {
     public ResponseEntity<?> getAllTables() {
         return ResponseEntity.ok(tableService.getAllTable());
     }
+
+    @GetMapping("/dirty")
+    public ResponseEntity<?> getDirtyTables() {
+        return ResponseEntity.ok(tableService.getDirtyTable());
+    }
+
+    @PostMapping("/cleaned/{tableNumber}")
+    public ResponseEntity<?> cleanedTable(@PathVariable int tableNumber) {
+        return ResponseEntity.ok(tableService.cleanedTable(tableNumber));
+    }
 }

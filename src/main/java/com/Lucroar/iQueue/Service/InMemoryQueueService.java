@@ -70,9 +70,9 @@ public class InMemoryQueueService {
                 QueueEntry nextEntry = getNextQueueEntryFitting(tableSize);
                 if (nextEntry != null) {
                     // Mark table as occupied
-                    table.setStatus(Status.OCCUPIED);
+                    table.setStatus(Status.CONFIRMING);
                     tableRepository.save(table);
-                    nextEntry.setStatus(Status.SEATED);
+                    nextEntry.setStatus(Status.CONFIRMING);
                     nextEntry.setTable_number(table.getTableNumber());
                     queueRepository.save(nextEntry);
                     sendSeatedTableInfo(nextEntry, table);
