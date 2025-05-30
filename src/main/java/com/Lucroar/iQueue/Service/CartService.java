@@ -109,11 +109,20 @@ public class CartService {
         }
 
         Cart cart = cartOpt.get();
-        cart.getOrders().removeIf(order -> order.getProduct_id().equals(cartDTO.getMenuId()));
-        int newTotal = cart.getOrders().stream()
-                .mapToInt(Order::getPrice)
-                .sum();
-        cart.setTotal(newTotal);
+        Order orderToRemove = null;
+        for (Order order : cart.getOrders()) {
+            if (order.getProduct_id().equals(cartDTO.getMenuId())) {
+                orderToRemove = order;
+                break;
+            }
+        }
+
+        if (orderToRemove != null) {
+            int deduction = orderToRemove.getPrice() * orderToRemove.getQuantity();
+            cart.getOrders().remove(orderToRemove);
+            cart.setTotal(cart.getTotal() - deduction);
+        }
+
         return cartRepository.save(cart);
     }
 
