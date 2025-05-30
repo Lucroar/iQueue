@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Entity.Table;
 import com.Lucroar.iQueue.Repository.TableRepository;
 import org.springframework.stereotype.Service;
@@ -20,5 +21,16 @@ public class TableService {
 
     public List<Table> getAllTable(){
         return tableRepository.findAll();
+    }
+
+    public List<Table> getDirtyTable(){
+        return tableRepository.findByStatus(Status.DIRTY);
+    }
+
+    public Table cleanedTable(int tableNumber){
+        Table table = tableRepository.findByTableNumber(tableNumber);
+        table.setStatus(Status.AVAILABLE);
+        tableRepository.save(table);
+        return table;
     }
 }
