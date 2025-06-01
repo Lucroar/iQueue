@@ -34,7 +34,7 @@ public class OrdersService {
                     newOrders.setOrders(new ArrayList<>());
                     return newOrders;
                 });
-        QueueEntry queue = queueRepository.findByCustomerUsername(customer.getUsername()).get();
+        QueueEntry queue = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED)).get();
 
         List<Order> cartOrders = cartService.checkout(customer);
         List<Order> existingOrders = orders.getOrders();
@@ -45,7 +45,7 @@ public class OrdersService {
 
             for (Order existingOrder : existingOrders) {
                 if (existingOrder.getProduct_id().equals(cartOrder.getProduct_id())) {
-                    orders.setTotal(orders.getTotal() + menuOpt.getPrice()*cartOrder.getQuantity());
+                    orders.setTotal(orders.getTotal() + (menuOpt.getPrice() * cartOrder.getQuantity()));
                     existingOrder.setQuantity(existingOrder.getQuantity() + cartOrder.getQuantity());
                     found = true;
                     break;
@@ -54,7 +54,7 @@ public class OrdersService {
 
             if (!found) {
                 existingOrders.add(cartOrder);
-                orders.setTotal(orders.getTotal() + menuOpt.getPrice()*cartOrder.getQuantity());
+                orders.setTotal(orders.getTotal() + (menuOpt.getPrice()*cartOrder.getQuantity()));
             }
         }
         orders.setTableNumber(queue.getTable_number());
