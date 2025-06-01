@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface OrdersRepository extends MongoRepository<com.Lucroar.iQueue.Entity.Orders, String> {
     Optional<Orders> findByCustomer_customerId(String customerId);
+    Orders findByTableNumber(int tableNumber);
 }

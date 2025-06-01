@@ -15,6 +15,7 @@ public class Orders {
     @Id
     private String id;
     private CustomerDTO customer;
+    private int tableNumber;
     private List<Order> orders;
     private int total;
 }

@@ -1,26 +1,28 @@
 package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CustomerDTO;
-import com.Lucroar.iQueue.Entity.Customer;
-import com.Lucroar.iQueue.Entity.Menu;
-import com.Lucroar.iQueue.Entity.Order;
-import com.Lucroar.iQueue.Entity.Orders;
+import com.Lucroar.iQueue.DTO.QueueDTO;
+import com.Lucroar.iQueue.Entity.*;
 import com.Lucroar.iQueue.Repository.MenuRepository;
 import com.Lucroar.iQueue.Repository.OrdersRepository;
+import com.Lucroar.iQueue.Repository.QueueRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrdersService {
     private final OrdersRepository ordersRepository;
     private final MenuRepository menuRepository;
+    private final QueueRepository queueRepository;
     private final CartService cartService;
 
-    public OrdersService(OrdersRepository ordersRepository, MenuRepository menuRepository, CartService cartService) {
+    public OrdersService(OrdersRepository ordersRepository, MenuRepository menuRepository, QueueRepository queueRepository, CartService cartService) {
         this.ordersRepository = ordersRepository;
         this.menuRepository = menuRepository;
+        this.queueRepository = queueRepository;
         this.cartService = cartService;
     }
 
@@ -32,6 +34,7 @@ public class OrdersService {
                     newOrders.setOrders(new ArrayList<>());
                     return newOrders;
                 });
+        QueueEntry queue = queueRepository.findByCustomerUsername(customer.getUsername()).get();
 
         List<Order> cartOrders = cartService.checkout(customer);
         List<Order> existingOrders = orders.getOrders();
@@ -54,6 +57,7 @@ public class OrdersService {
                 orders.setTotal(orders.getTotal() + menuOpt.getPrice()*cartOrder.getQuantity());
             }
         }
+        orders.setTableNumber(queue.getTable_number());
 
         return ordersRepository.save(orders);
     }

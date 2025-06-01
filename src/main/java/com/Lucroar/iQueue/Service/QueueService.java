@@ -3,9 +3,11 @@ package com.Lucroar.iQueue.Service;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
+import com.Lucroar.iQueue.Entity.Cart;
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
+import com.Lucroar.iQueue.Repository.CartRepository;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
 import lombok.Getter;
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class QueueService {
     private final QueueRepository queueRepository;
     private final CustomerRepository customerRepository;
+    private final CartRepository cartRepository;
     private final DailySequenceGeneratorService sequenceGenerator;
     private final InMemoryQueueService inMemoryQueueService;
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
@@ -28,10 +31,12 @@ public class QueueService {
 
     public QueueService(QueueRepository queueRepository,
                         CustomerRepository customerRepository,
+                        CartRepository cartRepository,
                         DailySequenceGeneratorService sequenceGenerator,
                         InMemoryQueueService inMemoryQueueService) {
         this.queueRepository = queueRepository;
         this.customerRepository = customerRepository;
+        this.cartRepository = cartRepository;
         this.sequenceGenerator = sequenceGenerator;
         this.inMemoryQueueService = inMemoryQueueService;
     }
@@ -95,8 +100,9 @@ public class QueueService {
             queueEntryEntity.setStatus(Status.DONE);
             inMemoryQueueService.releaseTable(queueEntryEntity.getTable_number());
             queueRepository.save(queueEntryEntity);
+            Optional<Cart> cart = cartRepository.findByCustomer_customerId(customer.getId());
+            cart.ifPresent(cartRepository::delete);
             return new QueueDTO(queueEntryEntity);
-
         }
         return null;
     }

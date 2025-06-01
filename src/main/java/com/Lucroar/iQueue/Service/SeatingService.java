@@ -40,13 +40,17 @@ public class SeatingService {
         }
     }
 
+    //find by table and mark as available
     public QueueDTO missedSeating(CustomerDTO customer){
         List<Status> targetStatus = List.of(Status.CONFIRMING);
         Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), targetStatus);
         if(queueCont.isPresent()){
             QueueEntry queueEntry = queueCont.get();
+            Table table = tableRepository.findByTableNumber(queueEntry.getTable_number());
+            table.setStatus(Status.AVAILABLE);
             queueEntry.setStatus(Status.MISSED);
             queueRepository.save(queueEntry);
+            tableRepository.save(table);
             return new QueueDTO(queueEntry);
         } else {
             return null;
