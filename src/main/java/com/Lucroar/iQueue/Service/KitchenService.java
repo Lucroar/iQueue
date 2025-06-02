@@ -8,8 +8,9 @@ import com.Lucroar.iQueue.Repository.OrdersHistoryRepository;
 import com.Lucroar.iQueue.Repository.OrdersRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class KitchenService {
@@ -21,11 +22,10 @@ public class KitchenService {
         this.ordersHistoryRepository = ordersHistoryRepository;
     }
 
-    //Put the orderHistory creation here instead of the OrdersHistoryService
     public OrdersHistory orderServed(int tableNumber){
         Orders orders = ordersRepository.findByTableNumber(tableNumber);
         OrdersHistory ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(orders.getCustomer().getCustomerId(), OrderStatus.ORDERING)
-                .orElse(new OrdersHistory(orders.getCustomer(), orders.getOrders(),orders.getTotal()));
+                .orElse(new OrdersHistory(orders.getCustomer(), new ArrayList<>(), OrderStatus.ORDERING, LocalDateTime.now(), tableNumber));
 
         List<Order> newOrders = orders.getOrders();
         List<Order> existingOrders = ordersHistory.getOrders();

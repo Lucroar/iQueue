@@ -16,13 +16,16 @@ public class OrdersHistory {
     private String id;
     private LocalDateTime orderDate;
     private CustomerDTO customer;
+    private int tableNumber;
     private List<Order> orders;
     private OrderStatus status;
     private int total;
 
-    public OrdersHistory(CustomerDTO customer, List<Order> orders, int total) {
+    public OrdersHistory(CustomerDTO customer, List<Order> orders, OrderStatus status, LocalDateTime orderDate, int tableNumber) {
         this.customer = customer;
         this.orders = orders;
-        this.total = total;
+        this.status = status;
+        this.orderDate = orderDate;
+        this.tableNumber = tableNumber;
     }
 }

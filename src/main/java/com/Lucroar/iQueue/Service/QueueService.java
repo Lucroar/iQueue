@@ -3,12 +3,10 @@ package com.Lucroar.iQueue.Service;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
-import com.Lucroar.iQueue.Entity.Cart;
-import com.Lucroar.iQueue.Entity.Customer;
-import com.Lucroar.iQueue.Entity.QueueEntry;
-import com.Lucroar.iQueue.Entity.Status;
+import com.Lucroar.iQueue.Entity.*;
 import com.Lucroar.iQueue.Repository.CartRepository;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
+import com.Lucroar.iQueue.Repository.OrdersHistoryRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -23,20 +21,20 @@ public class QueueService {
     private final QueueRepository queueRepository;
     private final CustomerRepository customerRepository;
     private final CartRepository cartRepository;
+    private final OrdersHistoryRepository ordersHistoryRepository;
     private final DailySequenceGeneratorService sequenceGenerator;
     private final InMemoryQueueService inMemoryQueueService;
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
     @Getter
     private final String accessCode = "x9j3b7qt2a0e";
 
-    public QueueService(QueueRepository queueRepository,
-                        CustomerRepository customerRepository,
-                        CartRepository cartRepository,
-                        DailySequenceGeneratorService sequenceGenerator,
-                        InMemoryQueueService inMemoryQueueService) {
+    public QueueService(QueueRepository queueRepository, CustomerRepository customerRepository,
+                        CartRepository cartRepository, OrdersHistoryRepository ordersHistoryRepository,
+                        DailySequenceGeneratorService sequenceGenerator, InMemoryQueueService inMemoryQueueService) {
         this.queueRepository = queueRepository;
         this.customerRepository = customerRepository;
         this.cartRepository = cartRepository;
+        this.ordersHistoryRepository = ordersHistoryRepository;
         this.sequenceGenerator = sequenceGenerator;
         this.inMemoryQueueService = inMemoryQueueService;
     }
@@ -95,6 +93,7 @@ public class QueueService {
     //Mark the table as dirty and customer as done
     public QueueDTO finishedQueue(Customer customer) {
         Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED));
+        Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(customer.getId(), OrderStatus.ORDERING);
         if (queueCont.isPresent()) {
             QueueEntry queueEntryEntity = queueCont.get();
             queueEntryEntity.setStatus(Status.DONE);
@@ -103,6 +102,11 @@ public class QueueService {
             Optional<Cart> cart = cartRepository.findByCustomer_customerId(customer.getId());
             cart.ifPresent(cartRepository::delete);
             return new QueueDTO(queueEntryEntity);
+        }
+        if (ordersHistory.isPresent()) {
+            OrdersHistory ordersHistoryEntity = ordersHistory.get();
+            ordersHistoryEntity.setStatus(OrderStatus.UNPAID);
+            ordersHistoryRepository.save(ordersHistoryEntity);
         }
         return null;
     }
