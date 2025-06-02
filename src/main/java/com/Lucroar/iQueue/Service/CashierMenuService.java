@@ -1,24 +1,31 @@
 package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
-import com.Lucroar.iQueue.Entity.QueueEntry;
-import com.Lucroar.iQueue.Entity.Status;
-import com.Lucroar.iQueue.Entity.Table;
+import com.Lucroar.iQueue.DTO.OrdersHistoryDTO;
+import com.Lucroar.iQueue.Entity.*;
+import com.Lucroar.iQueue.Repository.OrdersHistoryRepository;
+import com.Lucroar.iQueue.Repository.PaymentRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
 import com.Lucroar.iQueue.Repository.TableRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CashierMenuService {
     private final TableRepository tableRepository;
     private final QueueRepository queueRepository;
+    private final OrdersHistoryRepository orderHistory;
+    private final PaymentRepository paymentRepository;
 
-    public CashierMenuService(TableRepository tableRepository, QueueRepository queueRepository) {
+    public CashierMenuService(TableRepository tableRepository, QueueRepository queueRepository, OrdersHistoryRepository orderHistory, PaymentRepository paymentRepository) {
         this.tableRepository = tableRepository;
         this.queueRepository = queueRepository;
+        this.orderHistory = orderHistory;
+        this.paymentRepository = paymentRepository;
     }
 
     public List<CashierMainMenuDTO> viewListOfTables(){
@@ -43,6 +50,36 @@ public class CashierMenuService {
             result.add(dto);
         }
         return result;
+    }
+
+    public List<OrdersHistoryDTO> viewAllUnpaid(){
+        List<OrdersHistory> orders = orderHistory.findByStatus(OrderStatus.UNPAID);
+
+        return orders.stream().map(order ->{
+           OrdersHistoryDTO dto = new OrdersHistoryDTO();
+           dto.setOrderDate(order.getOrderDate());
+            dto.setCustomer(order.getCustomer());
+            dto.setStatus(order.getStatus());
+            dto.setTableNumber(order.getTableNumber());
+            dto.setTotal(order.getTotal());
+            return dto;
+        }).toList();
+    }
+
+    public Payment orderPayment(OrdersHistoryDTO ordersHistory){
+        Optional<OrdersHistory> history = orderHistory.findByCustomer_usernameAndStatus(ordersHistory.getCustomer().getUsername(), OrderStatus.ORDERING);
+        if (history.isPresent()) {
+            OrdersHistory order = history.get();
+            Payment payment = new Payment();
+            payment.setCustomer(order.getCustomer());
+            payment.setOrders(order.getOrders());
+            payment.setOrderHistoryId(order.getId());
+            payment.setAmount(order.getTotal());
+            payment.setPaymentMethod(ordersHistory.getPaymentMethod());
+            paymentRepository.save(payment);
+            return payment;
+        }
+        return null;
     }
 
 }
