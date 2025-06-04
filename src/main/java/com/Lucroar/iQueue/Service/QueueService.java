@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class QueueService {
@@ -93,13 +94,13 @@ public class QueueService {
     //Mark the table as dirty and customer as done
     public QueueDTO finishedQueue(Customer customer) {
         Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED));
-        Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(customer.getId(), OrderStatus.ORDERING);
+        Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.ORDERING);
         if (queueCont.isPresent()) {
             QueueEntry queueEntryEntity = queueCont.get();
             queueEntryEntity.setStatus(Status.DONE);
             inMemoryQueueService.releaseTable(queueEntryEntity.getTable_number());
             queueRepository.save(queueEntryEntity);
-            Optional<Cart> cart = cartRepository.findByCustomer_customerId(customer.getId());
+            Optional<Cart> cart = cartRepository.findByCustomer_Username(customer.getUsername());
             cart.ifPresent(cartRepository::delete);
             return new QueueDTO(queueEntryEntity);
         }
@@ -111,10 +112,41 @@ public class QueueService {
         return null;
     }
 
+    //Create a random cashier based user for queue creation
+    //Crete singleton if return null for existing username
+    public QueueDTO cashierCreateQueue(QueueCreationRequest queueRequest) {
+        boolean usernameExists = queueRepository.findByCustomerUsernameAndStatusIn(queueRequest.getGuestUsername(),
+                List.of(Status.WAITING)).isPresent();
+        if (usernameExists) return null;
+        QueueEntry queueEntry = new QueueEntry();
+        CustomerDTO customerDTO = new CustomerDTO();
+        customerDTO.setUsername(queueRequest.getGuestUsername());
+        customerDTO.setGuest(true);
+        queueEntry.setCustomer(customerDTO);
+
+        queueEntry.setNum_people(queueRequest.getNum_people());
+        queueEntry.setQueueing_number(sequenceGenerator.generateQueueCode(queueEntry.getNum_people()));
+        queueEntry.setStatus(Status.WAITING);
+        queueEntry.setWaiting_since(LocalDateTime.now());
+        QueueEntry queueEntryEntity = queueRepository.save(queueEntry);
+        inMemoryQueueService.enqueue(queueEntryEntity);
+        QueueDTO queue = new QueueDTO(queueEntryEntity);
+        queue.setTier(findAppropriateTableTier(queueEntry.getNum_people()));
+        return queue;
+    }
+
     private int findAppropriateTableTier(int numPeople) {
         for (int tier : tableTiers) {
             if (numPeople <= tier) return tier;
         }
         return -1;
     }
+
+//    private CustomerDTO generateRandomGuestNumber(){
+//        String randomCode = String.format("%04d", new Random().nextInt(10000)); // 0000 - 9999
+//        CustomerDTO guest = new CustomerDTO();
+//        guest.setUsername("Guest-" + randomCode);
+//        guest.setGuest(true);
+//        return guest;
+//    }
 }

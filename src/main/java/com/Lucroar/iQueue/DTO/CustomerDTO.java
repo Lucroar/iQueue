@@ -15,6 +15,7 @@ public class CustomerDTO {
     private String last_Name;
     private String email;
     private String password;
+    private boolean isGuest;
 
     public CustomerDTO(Customer customer) {
         this.customerId = customer.getId();
