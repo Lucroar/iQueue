@@ -16,4 +16,8 @@ public class WebSocketPublisher {
         messagingTemplate.convertAndSend("/topic/seated-tables/" + tier, info);
     }
 
+    public void sendSeatedTableInfoGlobal(String tier, SeatedTableInfo info) {
+        messagingTemplate.convertAndSend("/topic/seated-tables/", info);
+    }
+
 }

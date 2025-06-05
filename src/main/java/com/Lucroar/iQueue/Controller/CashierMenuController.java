@@ -4,6 +4,7 @@ import com.Lucroar.iQueue.DTO.CashierOrderDTO;
 import com.Lucroar.iQueue.DTO.OrdersHistoryDTO;
 import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
+import com.Lucroar.iQueue.Entity.Orders;
 import com.Lucroar.iQueue.Service.CashierCartService;
 import com.Lucroar.iQueue.Service.CashierMenuService;
 import com.Lucroar.iQueue.Service.QueueService;
@@ -42,9 +43,6 @@ public class CashierMenuController {
 
     @PostMapping("/enter-queue")
     public ResponseEntity<?> enterQueue(@RequestBody QueueCreationRequest creationRequest) {
-        if (!creationRequest.getAccessCode().equals(queueService.getAccessCode())){
-            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Wrong Access Code"));
-        }
         if (creationRequest.getNum_people() > 6) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Number of people must not exceed 6"));
         }
@@ -57,6 +55,13 @@ public class CashierMenuController {
 
     @PostMapping("/add-order")
     public ResponseEntity<?> order(@RequestBody CashierOrderDTO orderDTO) {
-        return ResponseEntity.ok(cashierCartService.createOrder(orderDTO));
+        Orders orders = cashierCartService.createOrder(orderDTO);
+        if (cashierCartService.checkTableNumber(orderDTO.getUsername()) == 0){
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Table not assigned yet"));
+        }
+        if (orders == null) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username do not exist"));
+        }
+        return ResponseEntity.ok(orders);
     }
 }
