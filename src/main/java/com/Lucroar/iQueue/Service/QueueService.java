@@ -64,7 +64,7 @@ public class QueueService {
     //Check if there is an existing queue to a customer
     public QueueDTO checkQueue(Customer customer) {
         List<Status> targetStatuses = List.of(Status.WAITING,Status.CONFIRMING, Status.SEATED);
-        Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), targetStatuses);
+        Optional<QueueEntry> queueCont = queueRepository.findActiveNonGuestByUsername(customer.getUsername(), targetStatuses);
         return queueCont.map(QueueDTO::new).orElse(null);
     }
 

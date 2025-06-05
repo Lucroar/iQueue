@@ -16,10 +16,12 @@ import java.util.Optional;
 public class CashierCartService {
     private final OrdersRepository ordersRepository;
     private final QueueRepository queueRepository;
+    private final MenuRepository menuRepository;
 
-    public CashierCartService(OrdersRepository ordersRepository, QueueRepository queueRepository) {
+    public CashierCartService(OrdersRepository ordersRepository, QueueRepository queueRepository, MenuRepository menuRepository) {
         this.ordersRepository = ordersRepository;
         this.queueRepository = queueRepository;
+        this.menuRepository = menuRepository;
     }
 
     public Orders createOrder(CashierOrderDTO order){
@@ -28,11 +30,15 @@ public class CashierCartService {
             Orders orders = new Orders();
             CustomerDTO customer = new CustomerDTO();
             customer.setUsername(order.getUsername());
+            customer.setGuest(true);
             orders.setCustomer(customer);
             orders.setTableNumber(queueEntry.get().getTable_number());
             orders.setOrders(order.getOrders());
 
             for (Order orderEntity : order.getOrders()) {
+                Menu menu = menuRepository.findById(orderEntity.getProduct_id()).get();
+                orderEntity.setPrice(menu.getPrice());
+                orderEntity.setName(menu.getName());
                 orders.setTotal(orders.getTotal() + (orderEntity.getPrice() * orderEntity.getQuantity()));
             }
             ordersRepository.save(orders);
