@@ -17,7 +17,7 @@ public class WebSocketPublisher {
         messagingTemplate.convertAndSend("/topic/seated-tables/" + tier, info);
     }
 
-    public void sendSeatedTableInfoGlobal(CashierMainMenuDTO cashierMainMenu) {
+    public void sendSeatedTableInfoToCashier(CashierMainMenuDTO cashierMainMenu) {
         messagingTemplate.convertAndSend("/topic/seated-tables/", cashierMainMenu);
     }
 

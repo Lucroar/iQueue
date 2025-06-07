@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Entity.Table;
 import com.Lucroar.iQueue.Repository.TableRepository;
@@ -10,9 +11,11 @@ import java.util.List;
 @Service
 public class TableService {
     private final TableRepository tableRepository;
+    private final WebSocketPublisher webSocketPublisher;
 
-    public TableService(TableRepository tableRepository) {
+    public TableService(TableRepository tableRepository, WebSocketPublisher webSocketPublisher) {
         this.tableRepository = tableRepository;
+        this.webSocketPublisher = webSocketPublisher;
     }
 
     public Table addTable(Table table) {
@@ -31,6 +34,7 @@ public class TableService {
         Table table = tableRepository.findByTableNumber(tableNumber);
         table.setStatus(Status.AVAILABLE);
         tableRepository.save(table);
+        webSocketPublisher.sendSeatedTableInfoToCashier(new CashierMainMenuDTO(table.getTableNumber(), null, table.getSize(), table.getStatus()));
         return table;
     }
 }

@@ -1,8 +1,7 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
-import com.Lucroar.iQueue.DTO.QueueDTO;
-import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Entity.Table;
@@ -17,13 +16,15 @@ import java.util.Optional;
 public class SeatingService {
     private final TableRepository tableRepository;
     private final QueueRepository queueRepository;
+    private final WebSocketPublisher webSocketPublisher;
 
-    public SeatingService(TableRepository tableRepository, QueueRepository queueRepository) {
+    public SeatingService(TableRepository tableRepository, QueueRepository queueRepository, WebSocketPublisher webSocketPublisher) {
         this.tableRepository = tableRepository;
         this.queueRepository = queueRepository;
+        this.webSocketPublisher = webSocketPublisher;
     }
 
-    public QueueDTO confirmSeating(CustomerDTO customer){
+    public CashierMainMenuDTO confirmSeating(CustomerDTO customer){
         List<Status> targetStatus = List.of(Status.CONFIRMING);
         Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), targetStatus);
 
@@ -34,14 +35,16 @@ public class SeatingService {
             queueEntry.setStatus(Status.SEATED);
             tableRepository.save(table);
             queueRepository.save(queueEntry);
-            return new QueueDTO(queueEntry);
+            CashierMainMenuDTO mainMenuDTO = new CashierMainMenuDTO(table.getTableNumber(), queueEntry.getCustomer().getUsername(), table.getSize(), table.getStatus());
+            webSocketPublisher.sendSeatedTableInfoToCashier(mainMenuDTO);
+            return mainMenuDTO;
         } else {
             return null;
         }
     }
 
     //find by table and mark as available
-    public QueueDTO missedSeating(CustomerDTO customer){
+    public CashierMainMenuDTO missedSeating(CustomerDTO customer){
         List<Status> targetStatus = List.of(Status.CONFIRMING);
         Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), targetStatus);
         if(queueCont.isPresent()){
@@ -51,7 +54,9 @@ public class SeatingService {
             queueEntry.setStatus(Status.MISSED);
             queueRepository.save(queueEntry);
             tableRepository.save(table);
-            return new QueueDTO(queueEntry);
+            CashierMainMenuDTO mainMenuDTO = new CashierMainMenuDTO(table.getTableNumber(), queueEntry.getCustomer().getUsername(), table.getSize(), table.getStatus());
+            webSocketPublisher.sendSeatedTableInfoToCashier(mainMenuDTO);
+            return mainMenuDTO;
         } else {
             return null;
         }

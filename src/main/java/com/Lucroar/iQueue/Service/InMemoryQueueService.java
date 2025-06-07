@@ -96,7 +96,7 @@ public class InMemoryQueueService {
         lastSeatedService.newLastSeatedByTier(new LastSeated(table.getTableNumber(),
                 entry.getQueueing_number(), tier));
         webSocketPublisher.sendSeatedTableInfo(String.valueOf(tier) , info);
-        webSocketPublisher.sendSeatedTableInfoGlobal(mainMenu);
+        webSocketPublisher.sendSeatedTableInfoToCashier(mainMenu);
     }
 
     private QueueEntry getNextQueueEntryFitting(int tableSize) {
@@ -125,11 +125,10 @@ public class InMemoryQueueService {
 
     public void releaseTable(int tableNumber) {
         Table table = tableRepository.findByTableNumber(tableNumber);
-        if (table != null) {
-            table.setStatus(Status.DIRTY);
-            tableRepository.save(table);
-            seatNextAvailable(); // Try to seat someone right away
-        }
+        table.setStatus(Status.DIRTY);
+        webSocketPublisher.sendSeatedTableInfoToCashier(new CashierMainMenuDTO(table.getTableNumber(),
+                null, table.getSize(),table.getStatus()));
+        tableRepository.save(table);
     }
 
 }
