@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.DTO.SeatedTableInfo;
 import com.Lucroar.iQueue.Entity.LastSeated;
 import com.Lucroar.iQueue.Entity.QueueEntry;
@@ -66,8 +67,7 @@ public class InMemoryQueueService {
 
         for (Table table : tables) {
             if (table.getStatus() == Status.AVAILABLE) {
-                int tableSize = table.getSize();
-                QueueEntry nextEntry = getNextQueueEntryFitting(tableSize);
+                QueueEntry nextEntry = getNextQueueEntryFitting(table.getSize());
                 if (nextEntry != null) {
                     // Mark table as occupied
                     table.setStatus(Status.CONFIRMING);
@@ -88,9 +88,15 @@ public class InMemoryQueueService {
                 table.getTableNumber(),
                 entry.getQueueing_number()
         );
+        CashierMainMenuDTO mainMenu = new CashierMainMenuDTO();
+        mainMenu.setUsername(entry.getCustomer().getUsername());
+        mainMenu.setTableNumber(table.getTableNumber());
+        mainMenu.setSize(table.getSize());
+        mainMenu.setStatus(table.getStatus());
         lastSeatedService.newLastSeatedByTier(new LastSeated(table.getTableNumber(),
                 entry.getQueueing_number(), tier));
         webSocketPublisher.sendSeatedTableInfo(String.valueOf(tier) , info);
+        webSocketPublisher.sendSeatedTableInfoGlobal(mainMenu);
     }
 
     private QueueEntry getNextQueueEntryFitting(int tableSize) {

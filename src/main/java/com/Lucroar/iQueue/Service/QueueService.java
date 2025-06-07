@@ -4,10 +4,7 @@ import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
 import com.Lucroar.iQueue.Entity.*;
-import com.Lucroar.iQueue.Repository.CartRepository;
-import com.Lucroar.iQueue.Repository.CustomerRepository;
-import com.Lucroar.iQueue.Repository.OrdersHistoryRepository;
-import com.Lucroar.iQueue.Repository.QueueRepository;
+import com.Lucroar.iQueue.Repository.*;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +20,7 @@ public class QueueService {
     private final CustomerRepository customerRepository;
     private final CartRepository cartRepository;
     private final OrdersHistoryRepository ordersHistoryRepository;
+    private final QueueHistoryRepository queueHistoryRepository;
     private final DailySequenceGeneratorService sequenceGenerator;
     private final InMemoryQueueService inMemoryQueueService;
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
@@ -31,11 +29,13 @@ public class QueueService {
 
     public QueueService(QueueRepository queueRepository, CustomerRepository customerRepository,
                         CartRepository cartRepository, OrdersHistoryRepository ordersHistoryRepository,
-                        DailySequenceGeneratorService sequenceGenerator, InMemoryQueueService inMemoryQueueService) {
+                        QueueHistoryRepository queueHistoryRepository, DailySequenceGeneratorService sequenceGenerator,
+                        InMemoryQueueService inMemoryQueueService) {
         this.queueRepository = queueRepository;
         this.customerRepository = customerRepository;
         this.cartRepository = cartRepository;
         this.ordersHistoryRepository = ordersHistoryRepository;
+        this.queueHistoryRepository = queueHistoryRepository;
         this.sequenceGenerator = sequenceGenerator;
         this.inMemoryQueueService = inMemoryQueueService;
     }
@@ -68,24 +68,13 @@ public class QueueService {
         return queueCont.map(QueueDTO::new).orElse(null);
     }
 
-//    Used to be called after queue is created
-//    public QueueDTO enterQueue(QueueDTO queue) {
-//        Optional<QueueEntry> queueCont = queueRepository.findById(queue.getQueue_id());
-//        if (queueCont.isPresent()) {
-//            QueueEntry queueEntity = queueCont.get();
-//            queueEntity.setStatus(Status.WAITING);
-//            queueRepository.save(queueEntity);
-//            return new QueueDTO(queueEntity);
-//        }
-//        return null;
-//    }
-
     public QueueDTO cancelQueue(Customer customer) {
         Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.WAITING));
         if (queueCont.isPresent()) {
             QueueEntry queueEntryEntity = queueCont.get();
+            queueRepository.delete(queueEntryEntity);
             queueEntryEntity.setStatus(Status.CANCELLED);
-            queueRepository.save(queueEntryEntity);
+            queueHistoryRepository.save(new QueueHistory(queueEntryEntity));
             return new QueueDTO(queueEntryEntity);
         }
         return null;
@@ -97,17 +86,18 @@ public class QueueService {
         Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.ORDERING);
         if (queueCont.isPresent()) {
             QueueEntry queueEntryEntity = queueCont.get();
+            queueRepository.delete(queueEntryEntity);
             queueEntryEntity.setStatus(Status.DONE);
             inMemoryQueueService.releaseTable(queueEntryEntity.getTable_number());
-            queueRepository.save(queueEntryEntity);
+            queueHistoryRepository.save(new QueueHistory(queueEntryEntity));
             Optional<Cart> cart = cartRepository.findByCustomer_Username(customer.getUsername());
             cart.ifPresent(cartRepository::delete);
+            if (ordersHistory.isPresent()) {
+                OrdersHistory ordersHistoryEntity = ordersHistory.get();
+                ordersHistoryEntity.setStatus(OrderStatus.UNPAID);
+                ordersHistoryRepository.save(ordersHistoryEntity);
+            }
             return new QueueDTO(queueEntryEntity);
-        }
-        if (ordersHistory.isPresent()) {
-            OrdersHistory ordersHistoryEntity = ordersHistory.get();
-            ordersHistoryEntity.setStatus(OrderStatus.UNPAID);
-            ordersHistoryRepository.save(ordersHistoryEntity);
         }
         return null;
     }

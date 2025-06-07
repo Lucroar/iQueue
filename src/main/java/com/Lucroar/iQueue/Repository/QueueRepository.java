@@ -12,8 +12,8 @@ import java.util.Optional;
 @Repository
 public interface QueueRepository extends MongoRepository<QueueEntry, String> {
     Optional<QueueEntry> findByCustomerUsernameAndStatusIn(String username, List<Status> status);
-    @Query ("{ 'customer.username': ?0, 'status': { $in: ?1 }, 'customer.guest': false }")
+    @Query ("{ 'customer.username': ?0, 'status': { $in: ?1 }, 'customer.isGuest': false }")
     Optional<QueueEntry> findActiveNonGuestByUsername(String username, List<Status> statuses);
     Optional<QueueEntry> findByCustomer_Username(String username);
-    List<QueueEntry> findByStatus(Status status);
+    List<QueueEntry> findByStatusIn(List<Status> status);
 }

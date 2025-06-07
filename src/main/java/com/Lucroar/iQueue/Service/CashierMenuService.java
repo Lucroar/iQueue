@@ -29,7 +29,7 @@ public class CashierMenuService {
 
     public List<CashierMainMenuDTO> viewListOfTables(){
         List<Table> tables = tableRepository.findAll();
-        List<QueueEntry> entries = queueRepository.findByStatus(Status.SEATED);
+        List<QueueEntry> entries = queueRepository.findByStatusIn(List.of(Status.SEATED, Status.CONFIRMING));
 
         List<CashierMainMenuDTO> result = new ArrayList<>();
 
