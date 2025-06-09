@@ -21,4 +21,8 @@ public class WebSocketPublisher {
         messagingTemplate.convertAndSend("/topic/seated-tables/", cashierMainMenu);
     }
 
+//    public void sendTableOrders() {
+//        messagingTemplate.convertAndSend("topic/table/orders", );
+//    }
+
 }
