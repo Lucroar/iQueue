@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class KitchenService {
@@ -23,32 +24,35 @@ public class KitchenService {
         this.ordersHistoryRepository = ordersHistoryRepository;
     }
 
-    public OrdersHistory orderServed(int tableNumber){
-        Orders orders = ordersRepository.findByTableNumber(tableNumber);
-        OrdersHistory ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(orders.getCustomer().getCustomerId(), OrderStatus.ORDERING)
-                .orElse(new OrdersHistory(orders.getCustomer(), new ArrayList<>(), OrderStatus.ORDERING, LocalDateTime.now(), tableNumber));
+    public OrdersHistory orderServed(String orderId){
+        Optional<Orders> ordersDTO = ordersRepository.findById(orderId);
+        if(ordersDTO.isPresent()){
+            Orders orders = ordersDTO.get();
+            OrdersHistory ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(orders.getCustomer().getCustomerId(), OrderStatus.ORDERING)
+                    .orElse(new OrdersHistory(orders.getCustomer(), new ArrayList<>(), OrderStatus.ORDERING, LocalDateTime.now(), orders.getTableNumber()));
 
-        List<Order> newOrders = orders.getOrders();
-        List<Order> existingOrders = ordersHistory.getOrders();
+            List<Order> newOrders = orders.getOrders();
+            List<Order> existingOrders = ordersHistory.getOrders();
 
-        for (Order order : newOrders) {
-            boolean found = false;
-            for (Order existingOrder : existingOrders) {
-                if (existingOrder.getProduct_id().equals(order.getProduct_id())){
+            for (Order order : newOrders) {
+                boolean found = false;
+                for (Order existingOrder : existingOrders) {
+                    if (existingOrder.getProduct_id().equals(order.getProduct_id())){
+                        ordersHistory.setTotal(ordersHistory.getTotal() + (order.getPrice() * order.getQuantity()));
+                        existingOrder.setQuantity(existingOrder.getQuantity() + order.getQuantity());
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(!found){
+                    existingOrders.add(order);
                     ordersHistory.setTotal(ordersHistory.getTotal() + (order.getPrice() * order.getQuantity()));
-                    existingOrder.setQuantity(existingOrder.getQuantity() + order.getQuantity());
-                    found = true;
-                    break;
                 }
             }
-
-            if(!found){
-                existingOrders.add(order);
-                ordersHistory.setTotal(ordersHistory.getTotal() + (order.getPrice() * order.getQuantity()));
-            }
-        }
-        ordersRepository.delete(orders);
-        return ordersHistoryRepository.save(ordersHistory);
+            ordersRepository.delete(orders);
+            return ordersHistoryRepository.save(ordersHistory);
+        } else return null;
     }
 
     public List<TableOrderDTO> viewAllOrders(){
@@ -56,9 +60,21 @@ public class KitchenService {
         return tableOrders.stream()
                 .map(orders ->{
                     TableOrderDTO dto = new TableOrderDTO();
+                    dto.setId(orders.getId());
                     dto.setTableNumber(orders.getTableNumber());
-                    dto.setOrders(orders.getOrders());
+                    dto.setOrders(trimOrders(orders.getOrders()));
                     return dto;
                 }).toList();
+    }
+
+    private List<Order> trimOrders(List<Order> orders){
+        return orders.stream()
+                .map(order -> {
+                    Order trimmed = new Order();
+                    trimmed.setName(order.getName());
+                    trimmed.setQuantity(order.getQuantity());
+                    return trimmed;
+                })
+                .toList();
     }
 }

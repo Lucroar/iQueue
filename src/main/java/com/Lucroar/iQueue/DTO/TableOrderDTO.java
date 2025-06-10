@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TableOrderDTO {
+    private String id;
     private int tableNumber;
-    List<Order> orders;
+    private List<Order> orders;
 }

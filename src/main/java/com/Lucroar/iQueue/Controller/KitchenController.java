@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Controller;
 
+import com.Lucroar.iQueue.DTO.TableOrderDTO;
 import com.Lucroar.iQueue.Entity.Table;
 import com.Lucroar.iQueue.Service.KitchenService;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,8 @@ public class KitchenController {
     }
 
     @PostMapping("/serve")
-    public ResponseEntity<?> orderServed(@RequestBody Table table){
-        return ResponseEntity.ok(kitchenService.orderServed(table.getTableNumber()));
+    public ResponseEntity<?> orderServed(@RequestBody TableOrderDTO orderDTO){
+        return ResponseEntity.ok(kitchenService.orderServed(orderDTO.getId()));
     }
 
     @GetMapping("/orders")

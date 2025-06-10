@@ -42,7 +42,7 @@ public class CashierCartService {
                 orderEntity.setName(menu.getName());
                 orders.setTotal(orders.getTotal() + (orderEntity.getPrice() * orderEntity.getQuantity()));
             }
-            webSocketPublisher.sendTableOrders(new TableOrderDTO(orders.getTableNumber(), orders.getOrders()));
+            webSocketPublisher.sendTableOrders(new TableOrderDTO(orders.getId(), orders.getTableNumber(), orders.getOrders()));
             return ordersRepository.save(orders);
         }
         return null;
