@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.TableOrderDTO;
 import com.Lucroar.iQueue.Entity.Order;
 import com.Lucroar.iQueue.Entity.OrderStatus;
 import com.Lucroar.iQueue.Entity.Orders;
@@ -48,5 +49,16 @@ public class KitchenService {
         }
         ordersRepository.delete(orders);
         return ordersHistoryRepository.save(ordersHistory);
+    }
+
+    public List<TableOrderDTO> viewAllOrders(){
+        List<Orders> tableOrders = ordersRepository.findAll();
+        return tableOrders.stream()
+                .map(orders ->{
+                    TableOrderDTO dto = new TableOrderDTO();
+                    dto.setTableNumber(orders.getTableNumber());
+                    dto.setOrders(orders.getOrders());
+                    return dto;
+                }).toList();
     }
 }

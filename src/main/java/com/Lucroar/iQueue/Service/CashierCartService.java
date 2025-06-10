@@ -2,6 +2,7 @@ package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CashierOrderDTO;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
+import com.Lucroar.iQueue.DTO.TableOrderDTO;
 import com.Lucroar.iQueue.Entity.*;
 import com.Lucroar.iQueue.Repository.MenuRepository;
 import com.Lucroar.iQueue.Repository.OrdersRepository;
@@ -15,11 +16,13 @@ public class CashierCartService {
     private final OrdersRepository ordersRepository;
     private final QueueRepository queueRepository;
     private final MenuRepository menuRepository;
+    private final WebSocketPublisher webSocketPublisher;
 
-    public CashierCartService(OrdersRepository ordersRepository, QueueRepository queueRepository, MenuRepository menuRepository) {
+    public CashierCartService(OrdersRepository ordersRepository, QueueRepository queueRepository, MenuRepository menuRepository, WebSocketPublisher webSocketPublisher) {
         this.ordersRepository = ordersRepository;
         this.queueRepository = queueRepository;
         this.menuRepository = menuRepository;
+        this.webSocketPublisher = webSocketPublisher;
     }
 
     public Orders createOrder(CashierOrderDTO order){
@@ -39,6 +42,7 @@ public class CashierCartService {
                 orderEntity.setName(menu.getName());
                 orders.setTotal(orders.getTotal() + (orderEntity.getPrice() * orderEntity.getQuantity()));
             }
+            webSocketPublisher.sendTableOrders(new TableOrderDTO(orders.getTableNumber(), orders.getOrders()));
             return ordersRepository.save(orders);
         }
         return null;

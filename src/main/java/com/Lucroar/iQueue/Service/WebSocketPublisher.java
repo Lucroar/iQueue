@@ -2,6 +2,7 @@ package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.DTO.SeatedTableInfo;
+import com.Lucroar.iQueue.DTO.TableOrderDTO;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,8 @@ public class WebSocketPublisher {
         messagingTemplate.convertAndSend("/topic/seated-tables/", cashierMainMenu);
     }
 
-//    public void sendTableOrders() {
-//        messagingTemplate.convertAndSend("topic/table/orders", );
-//    }
+    public void sendTableOrders(TableOrderDTO tableOrderDTO) {
+        messagingTemplate.convertAndSend("/topic/table/orders", tableOrderDTO);
+    }
 
 }
