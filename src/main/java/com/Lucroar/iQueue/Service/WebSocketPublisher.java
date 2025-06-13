@@ -2,6 +2,7 @@ package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.DTO.SeatedTableInfo;
+import com.Lucroar.iQueue.DTO.TableDTO;
 import com.Lucroar.iQueue.DTO.TableOrderDTO;
 import com.Lucroar.iQueue.Entity.Table;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,7 +28,7 @@ public class WebSocketPublisher {
         messagingTemplate.convertAndSend("/topic/table/orders", tableOrderDTO);
     }
 
-    public void sendTableToClean(TableOrderDTO table) {
+    public void sendTableToClean(TableDTO table) {
         messagingTemplate.convertAndSend("/topic/table/dirty", table);
     }
 

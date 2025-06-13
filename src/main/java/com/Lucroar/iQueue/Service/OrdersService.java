@@ -40,7 +40,7 @@ public class OrdersService {
         }
         QueueEntry queue = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED)).get();
         newOrders.setTableNumber(queue.getTable_number());
-        webSocketPublisher.sendTableOrders(new TableOrderDTO(queue.getQueue_id(), queue.getTable_number(), cartOrders));
+        webSocketPublisher.sendTableOrders(new TableOrderDTO(queue.getQueue_id(), queue.getCustomer().getUsername(), queue.getTable_number(), newOrders.isTakeOut(), cartOrders));
 //        Removed to test logic in stacking in orderHistory
 //        Orders orders = ordersRepository.findByCustomer_customerId(customer.getId())
 //                .orElseGet(() -> {

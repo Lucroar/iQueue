@@ -2,7 +2,7 @@ package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.DTO.SeatedTableInfo;
-import com.Lucroar.iQueue.DTO.TableOrderDTO;
+import com.Lucroar.iQueue.DTO.TableDTO;
 import com.Lucroar.iQueue.Entity.LastSeated;
 import com.Lucroar.iQueue.Entity.QueueEntry;
 import com.Lucroar.iQueue.Entity.Status;
@@ -129,7 +129,7 @@ public class InMemoryQueueService {
         table.setStatus(Status.DIRTY);
         webSocketPublisher.sendSeatedTableInfoToCashier(new CashierMainMenuDTO(table.getTableNumber(),
                 null, table.getSize(),table.getStatus()));
-        webSocketPublisher.sendTableToClean(new TableOrderDTO(null, table.getTableNumber(), null));
+        webSocketPublisher.sendTableToClean(new TableDTO(table.getTableNumber()));
         tableRepository.save(table);
     }
 

@@ -29,7 +29,6 @@ public class CashierCartService {
         this.webSocketPublisher = webSocketPublisher;
     }
 
-    //TODO create a logic if the order is takeOut
     public Orders createOrder(CashierOrderDTO order){
         Optional<QueueEntry> queueEntry = queueRepository.findByCustomer_Username(order.getUsername());
         if(queueEntry.isPresent() || order.isTakeOut()){
@@ -62,7 +61,7 @@ public class CashierCartService {
             if(!order.isTakeOut()) ordersHistory.setTableNumber(queueEntry.get().getTable_number());
             OrdersHistory newHistory = ordersHistoryRepository.save(ordersHistory);
 
-            webSocketPublisher.sendTableOrders(new TableOrderDTO(orders.getId(), orders.getTableNumber(), orders.getOrders()));
+            webSocketPublisher.sendTableOrders(new TableOrderDTO(orders.getId(), orders.getCustomer().getUsername(),  orders.getTableNumber(), orders.isTakeOut(), orders.getOrders()));
             return ordersRepository.save(orders);
         }
         return null;
