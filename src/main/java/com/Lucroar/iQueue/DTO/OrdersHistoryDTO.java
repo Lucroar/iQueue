@@ -18,5 +18,4 @@ public class OrdersHistoryDTO {
     private int tableNumber;
     private List<Order> orders;
     private int total;
-    private PaymentMethod paymentMethod;
 }

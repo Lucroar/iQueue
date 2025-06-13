@@ -14,7 +14,6 @@ public class Payment {
     private String id;
     private CustomerDTO customer;
     private String orderHistoryId;
-    private List<Order> orders;
     private int amount;
     private PaymentMethod paymentMethod;
 }

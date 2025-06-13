@@ -103,7 +103,6 @@ public class QueueService {
     }
 
     //Create a random cashier based user for queue creation
-    //Crete singleton if return null for existing username
     public QueueDTO cashierCreateQueue(QueueCreationRequest queueRequest) {
         boolean usernameExists = queueRepository.findByCustomerUsernameAndStatusIn(queueRequest.getGuestUsername(),
                 List.of(Status.WAITING,Status.CONFIRMING,Status.SEATED)).isPresent();
