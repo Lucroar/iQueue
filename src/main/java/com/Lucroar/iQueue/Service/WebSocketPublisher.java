@@ -20,7 +20,7 @@ public class WebSocketPublisher {
     }
 
     public void sendSeatedTableInfoToCashier(CashierMainMenuDTO cashierMainMenu) {
-        messagingTemplate.convertAndSend("/topic/seated-tables/", cashierMainMenu);
+        messagingTemplate.convertAndSend("/topic/seated-tables", cashierMainMenu);
     }
 
     public void sendTableOrders(TableOrderDTO tableOrderDTO) {

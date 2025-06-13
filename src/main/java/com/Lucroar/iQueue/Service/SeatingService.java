@@ -54,7 +54,7 @@ public class SeatingService {
             queueEntry.setStatus(Status.MISSED);
             queueRepository.save(queueEntry);
             tableRepository.save(table);
-            CashierMainMenuDTO mainMenuDTO = new CashierMainMenuDTO(table.getTableNumber(), queueEntry.getCustomer().getUsername(), table.getSize(), table.getStatus());
+            CashierMainMenuDTO mainMenuDTO = new CashierMainMenuDTO(table.getTableNumber(), null, table.getSize(), table.getStatus());
             webSocketPublisher.sendSeatedTableInfoToCashier(mainMenuDTO);
             return mainMenuDTO;
         } else {
