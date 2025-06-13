@@ -31,6 +31,7 @@ public class OrderHistoryService {
                 .findByCustomer_UsernameAndStatusIn(customer.getUsername(), List.of(OrderStatus.PAID));
         return ordersHistory.stream()
                 .map(orderHistory -> new OrdersHistoryDTO(
+                        orderHistory.getId(),
                         orderHistory.getOrderDate(),
                         orderHistory.getOrders(),
                         orderHistory.getTotal()))
@@ -42,9 +43,14 @@ public class OrderHistoryService {
                 customer.getUsername(), OrderStatus.ORDERING);
         if (ordersHistory.isPresent()) {
             OrdersHistory orderHistory = ordersHistory.get();
-            return new OrdersHistoryDTO(orderHistory.getOrderDate(), orderHistory.getOrders(), orderHistory.getTotal());
+            return new OrdersHistoryDTO(orderHistory.getId(), orderHistory.getOrderDate(), orderHistory.getOrders(), orderHistory.getTotal());
         }
         return null;
+    }
+
+    public OrdersHistory viewById(String id){
+        Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findById(id);
+        return ordersHistory.orElse(null);
     }
 
 }

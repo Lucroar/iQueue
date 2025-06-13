@@ -6,6 +6,7 @@ import com.Lucroar.iQueue.Service.OrderHistoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +33,10 @@ public class OrderHistoryController {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "No Current Order"));
         }
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> viewOrderById(@PathVariable String id) {
+        return ResponseEntity.ok(orderHistoryService.viewById(id));
     }
 }
