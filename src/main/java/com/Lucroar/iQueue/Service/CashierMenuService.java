@@ -5,7 +5,6 @@ import com.Lucroar.iQueue.Entity.*;
 import com.Lucroar.iQueue.Repository.*;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -18,13 +17,17 @@ public class CashierMenuService {
     private final OrdersRepository ordersRepository;
     private final OrdersHistoryRepository orderHistory;
     private final PaymentRepository paymentRepository;
+    private final ReservationRepository reservationRepository;
 
-    public CashierMenuService(TableRepository tableRepository, QueueRepository queueRepository, OrdersRepository ordersRepository, OrdersHistoryRepository orderHistory, PaymentRepository paymentRepository) {
+    public CashierMenuService(TableRepository tableRepository, QueueRepository queueRepository,
+                              OrdersRepository ordersRepository, OrdersHistoryRepository orderHistory,
+                              PaymentRepository paymentRepository, ReservationRepository reservationRepository) {
         this.tableRepository = tableRepository;
         this.queueRepository = queueRepository;
         this.ordersRepository = ordersRepository;
         this.orderHistory = orderHistory;
         this.paymentRepository = paymentRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     public List<CashierMainMenuDTO> viewListOfTables(){
@@ -71,11 +74,13 @@ public class CashierMenuService {
         Optional<OrdersHistory> history = orderHistory.findByCustomer_usernameAndStatus(paymentDTO.getUsername(), OrderStatus.UNPAID);
         if (history.isPresent()) {
             OrdersHistory order = history.get();
+            order.setStatus(OrderStatus.PAID);
             Payment payment = new Payment();
             payment.setCustomer(order.getCustomer());
             payment.setOrderHistoryId(order.getId());
             payment.setAmount(order.getTotal());
             payment.setPaymentMethod(paymentDTO.getPaymentMethod());
+            orderHistory.save(order);
             paymentRepository.save(payment);
             return payment;
         } else if (paymentDTO.isGuest()) {
@@ -85,10 +90,13 @@ public class CashierMenuService {
             Optional<QueueEntry> entry = queueRepository.findByCustomer_Username(paymentDTO.getUsername());
 
             if (orders.isPresent() && ordersHistory.isPresent()) {
+                OrdersHistory order = ordersHistory.get();
+                order.setStatus(OrderStatus.PAID);
                 payment.setCustomer(orders.get().getCustomer());
                 payment.setOrderHistoryId(ordersHistory.get().getId());
                 payment.setAmount(orders.get().getTotal());
                 payment.setPaymentMethod(paymentDTO.getPaymentMethod());
+                orderHistory.save(order);
                 paymentRepository.save(payment);
             }
 
@@ -102,4 +110,7 @@ public class CashierMenuService {
         return orders.isPresent();
     }
 
+    public List<Reservation> viewAllReservations(){
+        return reservationRepository.findAll();
+    }
 }

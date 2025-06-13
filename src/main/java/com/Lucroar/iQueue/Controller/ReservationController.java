@@ -2,6 +2,7 @@ package com.Lucroar.iQueue.Controller;
 
 import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.Reservation;
+import com.Lucroar.iQueue.Exceptions.ReservationResult;
 import com.Lucroar.iQueue.Service.ReservationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,11 +21,11 @@ public class ReservationController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createReservation(@AuthenticationPrincipal Customer customer, @RequestBody Reservation reservation) {
-        Reservation reservationEntity = reservationService.createReservation(customer, reservation);
-        if (reservationEntity == null) {
-            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Already Created a Reservation"));
+        ReservationResult result = reservationService.createReservation(customer, reservation);
+        if (!result.isSuccess()) {
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", result.getMessage()));
         }
-        return ResponseEntity.ok(reservationEntity);
+        return ResponseEntity.ok(result.getReservation());
     }
 
     @PatchMapping("/cancel")

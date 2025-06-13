@@ -38,6 +38,11 @@ public class CashierMenuController {
         return ResponseEntity.ok(cashierMenuService.orderPayment(payment));
     }
 
+    @PostMapping("/done-table")
+    public ResponseEntity<?> doneTable(@RequestBody CustomerDTO customerDTO){
+        return ResponseEntity.ok(queueService.doneTable(customerDTO));
+    }
+
     @PostMapping("/enter-queue")
     public ResponseEntity<?> enterQueue(@RequestBody QueueCreationRequest creationRequest) {
         if (creationRequest.getNum_people() > 6) {
@@ -63,5 +68,10 @@ public class CashierMenuController {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username do not exist"));
         }
         return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/reservations")
+    public ResponseEntity<?> viewAllReservations(){
+        return ResponseEntity.ok(cashierMenuService.viewAllReservations());
     }
 }

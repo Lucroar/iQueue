@@ -15,6 +15,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TableOrderDTO {
     private String id;
+    private String username;
     private int tableNumber;
+    private boolean isTakeOut;
     private List<Order> orders;
 }

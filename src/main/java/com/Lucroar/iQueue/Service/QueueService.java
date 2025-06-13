@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
@@ -26,11 +27,12 @@ public class QueueService {
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
     @Getter
     private final String accessCode = "x9j3b7qt2a0e";
+    private final TableService tableService;
 
     public QueueService(QueueRepository queueRepository, CustomerRepository customerRepository,
                         CartRepository cartRepository, OrdersHistoryRepository ordersHistoryRepository,
                         QueueHistoryRepository queueHistoryRepository, DailySequenceGeneratorService sequenceGenerator,
-                        InMemoryQueueService inMemoryQueueService) {
+                        InMemoryQueueService inMemoryQueueService, TableService tableService) {
         this.queueRepository = queueRepository;
         this.customerRepository = customerRepository;
         this.cartRepository = cartRepository;
@@ -38,6 +40,7 @@ public class QueueService {
         this.queueHistoryRepository = queueHistoryRepository;
         this.sequenceGenerator = sequenceGenerator;
         this.inMemoryQueueService = inMemoryQueueService;
+        this.tableService = tableService;
     }
 
     public QueueDTO createQueue(Customer customer, QueueCreationRequest queueRequest) {
@@ -131,6 +134,25 @@ public class QueueService {
         return -1;
     }
 
+    public QueueDTO doneTable(CustomerDTO customerDTO) {
+        Optional<QueueEntry> queueEntry = queueRepository.findByCustomer_Username(customerDTO.getUsername());
+        if (queueEntry.isPresent()) {
+            QueueEntry entry = queueEntry.get();
+            queueRepository.delete(entry);
+            entry.setStatus(Status.DONE);
+            queueHistoryRepository.save(new QueueHistory(entry));
+            if (!entry.getCustomer().isGuest()) {
+                Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_usernameAndStatus(customerDTO.getUsername(), OrderStatus.ORDERING);
+                if (ordersHistory.isPresent()) {
+                    OrdersHistory order = ordersHistory.get();
+                    order.setStatus(OrderStatus.UNPAID);
+                }
+            }
+            inMemoryQueueService.releaseTable(entry.getTable_number());
+            return new QueueDTO(entry);
+        }
+        return null;
+    }
 //    private CustomerDTO generateRandomGuestNumber(){
 //        String randomCode = String.format("%04d", new Random().nextInt(10000)); // 0000 - 9999
 //        CustomerDTO guest = new CustomerDTO();
