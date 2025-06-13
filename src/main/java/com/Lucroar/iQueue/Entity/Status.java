@@ -14,5 +14,6 @@ public enum Status {
     CONFIRMING,
     OCCUPIED,
     DIRTY,
-    CLEANING
+    CLEANING,
+    RESERVED
 }

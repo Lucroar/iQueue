@@ -72,6 +72,6 @@ public class CashierMenuController {
 
     @GetMapping("/reservations")
     public ResponseEntity<?> viewAllReservations(){
-        return ResponseEntity.ok(cashierMenuService.viewAllReservations());
+        return ResponseEntity.ok(cashierMenuService.viewReservations());
     }
 }

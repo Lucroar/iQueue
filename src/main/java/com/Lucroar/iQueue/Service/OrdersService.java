@@ -30,48 +30,35 @@ public class OrdersService {
 
     public Orders checkoutOrders(Customer customer) {
         List<Order> cartOrders = cartService.checkout(customer);
+
         Orders newOrders = new Orders();
         newOrders.setCustomer(new CustomerDTO(customer));
         newOrders.setOrders(cartOrders);
         newOrders.setTakeOut(false);
         newOrders.setCreatedAt(LocalDateTime.now());
+        newOrders.setTakeOut(false);
+
+        int total = 0;
         for (Order order : cartOrders) {
-            newOrders.setTotal(order.getPrice() * order.getQuantity());
+            total += order.getPrice() * order.getQuantity();
         }
-        QueueEntry queue = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED)).get();
+        newOrders.setTotal(total);
+
+        QueueEntry queue = queueRepository
+                .findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED))
+                .orElseThrow(() -> new RuntimeException("No seated queue entry found for customer"));
+
         newOrders.setTableNumber(queue.getTable_number());
-        webSocketPublisher.sendTableOrders(new TableOrderDTO(queue.getQueue_id(), queue.getCustomer().getUsername(), queue.getTable_number(), newOrders.isTakeOut(), cartOrders));
-//        Removed to test logic in stacking in orderHistory
-//        Orders orders = ordersRepository.findByCustomer_customerId(customer.getId())
-//                .orElseGet(() -> {
-//                    Orders newOrders = new Orders();
-//                    newOrders.setCustomer(new CustomerDTO(customer));
-//                    newOrders.setOrders(new ArrayList<>());
-//                    return newOrders;
-//                });
-//        QueueEntry queue = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED)).get();
 
-//        List<Order> existingOrders = orders.getOrders();
-//        for (Order cartOrder : cartOrders) {
-//            boolean found = false;
-//            Menu menuOpt = menuRepository.findById(cartOrder.getProduct_id()).get();
-//
-//            for (Order existingOrder : existingOrders) {
-//                if (existingOrder.getProduct_id().equals(cartOrder.getProduct_id())) {
-//                    orders.setTotal(orders.getTotal() + (menuOpt.getPrice() * cartOrder.getQuantity()));
-//                    existingOrder.setQuantity(existingOrder.getQuantity() + cartOrder.getQuantity());
-//                    found = true;
-//                    break;
-//                }
-//            }
-//
-//            if (!found) {
-//                existingOrders.add(cartOrder);
-//                orders.setTotal(orders.getTotal() + (menuOpt.getPrice()*cartOrder.getQuantity()));
-//            }
-//        }
-//        orders.setTableNumber(queue.getTable_number());
-
+        webSocketPublisher.sendTableOrders(
+                new TableOrderDTO(
+                        queue.getQueue_id(),
+                        queue.getCustomer().getUsername(),
+                        queue.getTable_number(),
+                        newOrders.isTakeOut(),
+                        cartOrders
+                )
+        );
         return ordersRepository.save(newOrders);
     }
 

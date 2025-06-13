@@ -28,7 +28,7 @@ public class KitchenService {
         Optional<Orders> ordersDTO = ordersRepository.findById(tableOrderDTO.getId());
         if (ordersDTO.isPresent()) {
             Orders orders = ordersDTO.get();
-            if (!orders.getCustomer().isGuest() && !orders.isTakeOut()) {
+            if (!orders.getCustomer().isGuest() || !orders.isTakeOut()) {
 
                 OrdersHistory ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(orders.getCustomer().getCustomerId(), OrderStatus.ORDERING)
                         .orElse(new OrdersHistory(orders.getCustomer(), new ArrayList<>(), OrderStatus.ORDERING, LocalDateTime.now(), orders.getTableNumber()));
@@ -52,6 +52,7 @@ public class KitchenService {
                         ordersHistory.setTotal(ordersHistory.getTotal() + (order.getPrice() * order.getQuantity()));
                     }
                 }
+                ordersRepository.delete(orders);
                 return ordersHistoryRepository.save(ordersHistory);
             }
             ordersRepository.delete(orders);

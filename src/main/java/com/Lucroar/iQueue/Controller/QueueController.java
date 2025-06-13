@@ -25,6 +25,9 @@ public class QueueController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createQueue(@AuthenticationPrincipal Customer customer, @RequestBody QueueCreationRequest queueCreationRequest) {
+        if (queueService.existingOrderHistory(customer)){
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Can't enter queue. You have an unpaid order"));
+        }
         if (!queueCreationRequest.getAccessCode().equals(queueService.getAccessCode())){
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Wrong Access Code"));
         }

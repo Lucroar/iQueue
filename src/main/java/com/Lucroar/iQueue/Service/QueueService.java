@@ -87,6 +87,7 @@ public class QueueService {
     public QueueDTO finishedQueue(Customer customer) {
         Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED));
         Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.ORDERING);
+
         if (queueCont.isPresent()) {
             QueueEntry queueEntryEntity = queueCont.get();
             queueRepository.delete(queueEntryEntity);
@@ -141,17 +142,20 @@ public class QueueService {
             queueRepository.delete(entry);
             entry.setStatus(Status.DONE);
             queueHistoryRepository.save(new QueueHistory(entry));
-            if (!entry.getCustomer().isGuest()) {
-                Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_usernameAndStatus(customerDTO.getUsername(), OrderStatus.ORDERING);
-                if (ordersHistory.isPresent()) {
-                    OrdersHistory order = ordersHistory.get();
-                    order.setStatus(OrderStatus.UNPAID);
-                }
+            Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customerDTO.getUsername(), OrderStatus.ORDERING);
+            if (ordersHistory.isPresent()) {
+                OrdersHistory order = ordersHistory.get();
+                order.setStatus(OrderStatus.UNPAID);
             }
             inMemoryQueueService.releaseTable(entry.getTable_number());
             return new QueueDTO(entry);
         }
         return null;
+    }
+
+    public boolean existingOrderHistory(Customer customer){
+        Optional<OrdersHistory> historyOpt = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.UNPAID);
+        return historyOpt.isPresent();
     }
 //    private CustomerDTO generateRandomGuestNumber(){
 //        String randomCode = String.format("%04d", new Random().nextInt(10000)); // 0000 - 9999

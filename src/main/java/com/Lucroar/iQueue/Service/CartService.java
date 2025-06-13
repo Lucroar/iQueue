@@ -135,8 +135,6 @@ public class CartService {
         Cart cart = cartOpt.get();
         List<Order> ordersToCheckout = new ArrayList<>(cart.getOrders());
         cart.setTotal(0);
-
-        // Clear the cart
         cart.setOrders(new ArrayList<>());
         cartRepository.save(cart);
 

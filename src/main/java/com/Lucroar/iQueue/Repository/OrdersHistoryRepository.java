@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface OrdersHistoryRepository extends MongoRepository<OrdersHistory, String> {
     Optional<OrdersHistory> findByCustomer_CustomerIdAndStatus(String customer, OrderStatus status);
     Optional<OrdersHistory> findByCustomer_UsernameAndStatus(String username, OrderStatus status);
-    Optional<OrdersHistory> findByCustomer_usernameAndStatus(String username, OrderStatus status);
+    List<OrdersHistory> findByCustomer_UsernameAndStatusIn(String username, List<OrderStatus> status);
     List<OrdersHistory> findByCustomer_CustomerId(String customerId);
     List<OrdersHistory> findByStatus(OrderStatus status);
 }

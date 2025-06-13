@@ -71,7 +71,7 @@ public class CashierMenuService {
     }
 
     public Payment orderPayment(OrderPaymentDTO paymentDTO){
-        Optional<OrdersHistory> history = orderHistory.findByCustomer_usernameAndStatus(paymentDTO.getUsername(), OrderStatus.UNPAID);
+        Optional<OrdersHistory> history = orderHistory.findByCustomer_UsernameAndStatus(paymentDTO.getUsername(), OrderStatus.UNPAID);
         if (history.isPresent()) {
             OrdersHistory order = history.get();
             order.setStatus(OrderStatus.PAID);
@@ -110,7 +110,7 @@ public class CashierMenuService {
         return orders.isPresent();
     }
 
-    public List<Reservation> viewAllReservations(){
-        return reservationRepository.findAll();
+    public List<Reservation> viewReservations(){
+        return reservationRepository.findByStatus(Status.CREATED);
     }
 }
