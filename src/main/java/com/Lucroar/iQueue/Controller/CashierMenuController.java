@@ -1,9 +1,6 @@
 package com.Lucroar.iQueue.Controller;
 
-import com.Lucroar.iQueue.DTO.CashierOrderDTO;
-import com.Lucroar.iQueue.DTO.OrdersHistoryDTO;
-import com.Lucroar.iQueue.DTO.QueueCreationRequest;
-import com.Lucroar.iQueue.DTO.QueueDTO;
+import com.Lucroar.iQueue.DTO.*;
 import com.Lucroar.iQueue.Entity.Orders;
 import com.Lucroar.iQueue.Service.CashierCartService;
 import com.Lucroar.iQueue.Service.CashierMenuService;
@@ -37,8 +34,8 @@ public class CashierMenuController {
     }
 
     @PostMapping("/payment")
-    public ResponseEntity<?> orderPayment(@RequestBody OrdersHistoryDTO history) {
-        return ResponseEntity.ok(cashierMenuService.orderPayment(history));
+    public ResponseEntity<?> orderPayment(@RequestBody OrderPaymentDTO payment) {
+        return ResponseEntity.ok(cashierMenuService.orderPayment(payment));
     }
 
     @PostMapping("/enter-queue")
@@ -55,10 +52,13 @@ public class CashierMenuController {
 
     @PostMapping("/add-order")
     public ResponseEntity<?> order(@RequestBody CashierOrderDTO orderDTO) {
-        Orders orders = cashierCartService.createOrder(orderDTO);
-        if (cashierCartService.checkTableNumber(orderDTO.getUsername()) == 0){
+        if (cashierMenuService.usernameForTakeOutIsExisting(orderDTO.getUsername())){
+            return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username for take out already exist"));
+        }
+        if (cashierCartService.checkTableNumber(orderDTO.getUsername()) == 0 && !orderDTO.isTakeOut()){
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Table not assigned yet"));
         }
+        Orders orders = cashierCartService.createOrder(orderDTO);
         if (orders == null) {
             return ResponseEntity.status(409).body(Collections.singletonMap("msg", "Username do not exist"));
         }

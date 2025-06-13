@@ -9,6 +9,7 @@ import com.Lucroar.iQueue.Repository.OrdersRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,8 @@ public class OrdersService {
         Orders newOrders = new Orders();
         newOrders.setCustomer(new CustomerDTO(customer));
         newOrders.setOrders(cartOrders);
+        newOrders.setTakeOut(false);
+        newOrders.setCreatedAt(LocalDateTime.now());
         for (Order order : cartOrders) {
             newOrders.setTotal(order.getPrice() * order.getQuantity());
         }

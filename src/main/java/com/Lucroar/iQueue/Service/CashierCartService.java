@@ -5,10 +5,12 @@ import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.DTO.TableOrderDTO;
 import com.Lucroar.iQueue.Entity.*;
 import com.Lucroar.iQueue.Repository.MenuRepository;
+import com.Lucroar.iQueue.Repository.OrdersHistoryRepository;
 import com.Lucroar.iQueue.Repository.OrdersRepository;
 import com.Lucroar.iQueue.Repository.QueueRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -16,25 +18,30 @@ public class CashierCartService {
     private final OrdersRepository ordersRepository;
     private final QueueRepository queueRepository;
     private final MenuRepository menuRepository;
+    private final OrdersHistoryRepository ordersHistoryRepository;
     private final WebSocketPublisher webSocketPublisher;
 
-    public CashierCartService(OrdersRepository ordersRepository, QueueRepository queueRepository, MenuRepository menuRepository, WebSocketPublisher webSocketPublisher) {
+    public CashierCartService(OrdersRepository ordersRepository, QueueRepository queueRepository, MenuRepository menuRepository, OrdersHistoryRepository ordersHistoryRepository, WebSocketPublisher webSocketPublisher) {
         this.ordersRepository = ordersRepository;
         this.queueRepository = queueRepository;
         this.menuRepository = menuRepository;
+        this.ordersHistoryRepository = ordersHistoryRepository;
         this.webSocketPublisher = webSocketPublisher;
     }
 
+    //TODO create a logic if the order is takeOut
     public Orders createOrder(CashierOrderDTO order){
         Optional<QueueEntry> queueEntry = queueRepository.findByCustomer_Username(order.getUsername());
-        if(queueEntry.isPresent()){
+        if(queueEntry.isPresent() || order.isTakeOut()){
             Orders orders = new Orders();
             CustomerDTO customer = new CustomerDTO();
             customer.setUsername(order.getUsername());
             customer.setGuest(true);
             orders.setCustomer(customer);
-            orders.setTableNumber(queueEntry.get().getTable_number());
+            if(!order.isTakeOut())orders.setTableNumber(queueEntry.get().getTable_number());
             orders.setOrders(order.getOrders());
+            orders.setCreatedAt(LocalDateTime.now());
+            orders.setTakeOut(order.isTakeOut());
 
             for (Order orderEntity : order.getOrders()) {
                 Menu menu = menuRepository.findById(orderEntity.getProduct_id()).get();
@@ -42,6 +49,19 @@ public class CashierCartService {
                 orderEntity.setName(menu.getName());
                 orders.setTotal(orders.getTotal() + (orderEntity.getPrice() * orderEntity.getQuantity()));
             }
+
+            OrdersHistory ordersHistory = new OrdersHistory();
+            ordersHistory.setCustomer(orders.getCustomer());
+            ordersHistory.setTakeOut(orders.isTakeOut());
+            ordersHistory.setOrders(orders.getOrders());
+            ordersHistory.setStatus(OrderStatus.UNPAID);
+            ordersHistory.setTotal(orders.getTotal());
+            ordersHistory.setOrderDate(LocalDateTime.now());
+            ordersHistory.setTotal(orders.getTotal());
+            ordersHistory.setOrders(orders.getOrders());
+            if(!order.isTakeOut()) ordersHistory.setTableNumber(queueEntry.get().getTable_number());
+            OrdersHistory newHistory = ordersHistoryRepository.save(ordersHistory);
+
             webSocketPublisher.sendTableOrders(new TableOrderDTO(orders.getId(), orders.getTableNumber(), orders.getOrders()));
             return ordersRepository.save(orders);
         }

@@ -24,10 +24,14 @@ public class KitchenService {
         this.ordersHistoryRepository = ordersHistoryRepository;
     }
 
+    //TODO dont save to ordersHistory if takeOut or guestOrder
     public OrdersHistory orderServed(String orderId){
         Optional<Orders> ordersDTO = ordersRepository.findById(orderId);
         if(ordersDTO.isPresent()){
             Orders orders = ordersDTO.get();
+
+            //TODO just return the orderId if the orders is paid
+
             OrdersHistory ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(orders.getCustomer().getCustomerId(), OrderStatus.ORDERING)
                     .orElse(new OrdersHistory(orders.getCustomer(), new ArrayList<>(), OrderStatus.ORDERING, LocalDateTime.now(), orders.getTableNumber()));
 
@@ -56,7 +60,7 @@ public class KitchenService {
     }
 
     public List<TableOrderDTO> viewAllOrders(){
-        List<Orders> tableOrders = ordersRepository.findAll();
+        List<Orders> tableOrders = ordersRepository.findAllByOrderByCreatedAtAsc();
         return tableOrders.stream()
                 .map(orders ->{
                     TableOrderDTO dto = new TableOrderDTO();
