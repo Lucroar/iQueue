@@ -17,7 +17,7 @@ public class KitchenController {
 
     @PostMapping("/serve")
     public ResponseEntity<?> orderServed(@RequestBody TableOrderDTO orderDTO){
-        return ResponseEntity.ok(kitchenService.orderServed(orderDTO.getId()));
+        return ResponseEntity.ok(kitchenService.orderServed(orderDTO));
     }
 
     @GetMapping("/orders")

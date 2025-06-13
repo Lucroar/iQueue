@@ -2,8 +2,10 @@ package com.Lucroar.iQueue.Service;
 
 import com.Lucroar.iQueue.Entity.Cashier;
 import com.Lucroar.iQueue.Entity.Customer;
+import com.Lucroar.iQueue.Entity.KitchenStaff;
 import com.Lucroar.iQueue.Repository.CashierRepository;
 import com.Lucroar.iQueue.Repository.CustomerRepository;
+import com.Lucroar.iQueue.Repository.KitchenRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,21 +19,43 @@ public class UserDetailService implements UserDetailsManager {
     private final BCryptPasswordEncoder passwordEncoder;
     private final CashierRepository cashierRepository;
     private final CustomerRepository customerRepository;
+    private final KitchenRepository kitchenRepository;
 
-    public UserDetailService(BCryptPasswordEncoder passwordEncoder, CashierRepository cashierRepository, CustomerRepository customerRepository) {
+    public UserDetailService(BCryptPasswordEncoder passwordEncoder, CashierRepository cashierRepository, CustomerRepository customerRepository, KitchenRepository kitchenRepository) {
         this.passwordEncoder = passwordEncoder;
         this.cashierRepository = cashierRepository;
         this.customerRepository = customerRepository;
+        this.kitchenRepository = kitchenRepository;
     }
 
     @Override
     public void createUser(UserDetails user) {
-        if (user instanceof Cashier cashier) {
-            cashier.setPassword(passwordEncoder.encode(cashier.getPassword()));
-            cashierRepository.save(cashier);
-        } else if (user instanceof Customer customer) {
-            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-            customerRepository.save(customer);
+        String username = user.getUsername();
+
+        // Check if username exists in either staff collection
+        boolean usernameTaken =
+                cashierRepository.findByUsername(username).isPresent() ||
+                        kitchenRepository.findByUsername(username).isPresent();
+
+        if (usernameTaken) {
+            throw new IllegalArgumentException("Username already taken by another staff member.");
+        }
+
+        switch (user) {
+            case Cashier cashier -> {
+                cashier.setPassword(passwordEncoder.encode(cashier.getPassword()));
+                cashierRepository.save(cashier);
+            }
+            case Customer customer -> {
+                // No username uniqueness enforcement for customers
+                customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+                customerRepository.save(customer);
+            }
+            case KitchenStaff kitchenStaff -> {
+                kitchenStaff.setPassword(passwordEncoder.encode(kitchenStaff.getPassword()));
+                kitchenRepository.save(kitchenStaff);
+            }
+            default -> throw new IllegalArgumentException("Unsupported user type.");
         }
     }
 
@@ -61,7 +85,17 @@ public class UserDetailService implements UserDetailsManager {
         if (customer.isPresent()) {
             return customer.get();
         }
+
+        Optional<KitchenStaff> kitchenStaff = kitchenRepository.findByUsername(username);
+        if (kitchenStaff.isPresent()) {
+            return kitchenStaff.get();
+        }
+
         Optional<Cashier> cashier = cashierRepository.findByUsername(username);
-        return cashier.orElse(null);
+        if (cashier.isPresent()) {
+            return cashier.get();
+        }
+
+        throw new UsernameNotFoundException("User with username '" + username + "' not found.");
     }
 }
