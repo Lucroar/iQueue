@@ -43,8 +43,8 @@ public class EmailSender  {
         helper.setTo(toEmailAdd);
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
-//        helper.addInline("topBar", new ClassPathResource("/static/images/topBar.jpg"));
-//        helper.addInline("emailLogo", new ClassPathResource("/static/images/email_logo.png"));
+        helper.addInline("topBar", new ClassPathResource("static/images/topBar.png"));
+        helper.addInline("emailLogo", new ClassPathResource("static/images/email_logo.png"));
         mailSender.send(message);
     }
 }
