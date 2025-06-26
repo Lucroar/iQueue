@@ -61,7 +61,14 @@ public class CashierCartService {
             if(!order.isTakeOut()) ordersHistory.setTableNumber(queueEntry.get().getTable_number());
             OrdersHistory newHistory = ordersHistoryRepository.save(ordersHistory);
 
-            webSocketPublisher.sendTableOrders(new TableOrderDTO(orders.getId(), orders.getCustomer().getUsername(),  orders.getTableNumber(), orders.isTakeOut(), orders.getOrders()));
+            webSocketPublisher.sendTableOrders(
+                    new TableOrderDTO(
+                            orders.getId(),
+                        orders.getCustomer().getUsername(),
+                        orders.getTableNumber(),
+                        orders.isTakeOut(),
+                        orders.getCreatedAt(),
+                        orders.getOrders()));
             return ordersRepository.save(orders);
         }
         return null;

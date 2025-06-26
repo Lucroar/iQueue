@@ -56,6 +56,7 @@ public class OrdersService {
                         queue.getCustomer().getUsername(),
                         queue.getTable_number(),
                         newOrders.isTakeOut(),
+                        newOrders.getCreatedAt(),
                         cartOrders
                 )
         );
