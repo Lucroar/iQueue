@@ -21,9 +21,10 @@ public class OrdersHistoryDTO {
     private OrderStatus status;
     private int tableNumber;
     private List<Order> orders;
-    private int total;
+    private String description;
+    private double total;
 
-    public OrdersHistoryDTO(String id, LocalDateTime orderDate, List<Order> orders, int total) {
+    public OrdersHistoryDTO(String id, LocalDateTime orderDate, List<Order> orders, double total) {
         this.id = id;
         this.orderDate = orderDate;
         this.orders = orders;

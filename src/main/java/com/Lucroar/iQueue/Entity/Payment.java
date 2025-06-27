@@ -5,8 +5,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-
 @Document(collection = "Payment")
 @Data
 public class Payment {
@@ -14,6 +12,9 @@ public class Payment {
     private String id;
     private CustomerDTO customer;
     private String orderHistoryId;
-    private int amount;
+    private double cashAmount;
+    private double totalAmount;
+    private double vatableSale;
+    private double vat;
     private PaymentMethod paymentMethod;
 }

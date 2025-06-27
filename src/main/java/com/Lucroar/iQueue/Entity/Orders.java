@@ -20,7 +20,7 @@ public class Orders {
     private int tableNumber;
     private boolean takeOut;
     private List<Order> orders;
-    private int total;
+    private double total;
     @CreatedDate
     private LocalDateTime createdAt;
 }

@@ -17,19 +17,20 @@ public class OrdersHistory {
     @Id
     private String id;
     @CreatedDate
-    private LocalDateTime orderDate;
+    private LocalDateTime orderCreation;
     private CustomerDTO customer;
     private int tableNumber;
     private boolean isTakeOut;
     private List<Order> orders;
     private OrderStatus status;
-    private int total;
+    private String description;
+    private double total;
 
-    public OrdersHistory(CustomerDTO customer, List<Order> orders, OrderStatus status, LocalDateTime orderDate, int tableNumber) {
+    public OrdersHistory(CustomerDTO customer, List<Order> orders, OrderStatus status, LocalDateTime orderCreation, int tableNumber) {
         this.customer = customer;
         this.orders = orders;
         this.status = status;
-        this.orderDate = orderDate;
+        this.orderCreation = orderCreation;
         this.tableNumber = tableNumber;
     }
 

@@ -30,6 +30,7 @@ public class OrdersService {
 
     public Orders checkoutOrders(Customer customer) {
         List<Order> cartOrders = cartService.checkout(customer);
+        if (cartOrders.isEmpty()) return null;
 
         Orders newOrders = new Orders();
         newOrders.setCustomer(new CustomerDTO(customer));
@@ -38,7 +39,7 @@ public class OrdersService {
         newOrders.setCreatedAt(LocalDateTime.now());
         newOrders.setTakeOut(false);
 
-        int total = 0;
+        double total = 0;
         for (Order order : cartOrders) {
             total += order.getPrice() * order.getQuantity();
         }

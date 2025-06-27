@@ -118,7 +118,7 @@ public class CartService {
         }
 
         if (orderToRemove != null) {
-            int deduction = orderToRemove.getPrice() * orderToRemove.getQuantity();
+            double deduction = orderToRemove.getPrice() * orderToRemove.getQuantity();
             cart.getOrders().remove(orderToRemove);
             cart.setTotal(cart.getTotal() - deduction);
         }

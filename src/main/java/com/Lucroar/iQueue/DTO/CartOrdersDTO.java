@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class CartOrdersDTO {
     private List<Order> orders;
-    private int price;
+    private double price;
 }

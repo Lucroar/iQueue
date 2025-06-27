@@ -16,5 +16,5 @@ public class Cart {
     private String cart_id;
     private CustomerDTO customer;
     private List<Order> orders;
-    private int total;
+    private double total;
 }
