@@ -61,7 +61,7 @@ public class CashierMenuService {
                     .sorted(Comparator.comparing(OrdersHistory::getTableNumber))
                     .map(order ->{
                     OrdersHistoryDTO dto = new OrdersHistoryDTO();
-                    dto.setOrderDate(order.getOrderDate());
+                    dto.setOrderDate(order.getOrderCreation());
                     dto.setCustomer(order.getCustomer());
                     dto.setStatus(order.getStatus());
                     dto.setTableNumber(order.getTableNumber());
@@ -70,19 +70,20 @@ public class CashierMenuService {
         }).toList();
     }
 
-    public Payment orderPayment(OrderPaymentDTO paymentDTO){
-        Optional<OrdersHistory> history = orderHistory.findByCustomer_UsernameAndStatus(paymentDTO.getUsername(), OrderStatus.UNPAID);
+    public OrderPaymentDTO orderPayment(OrderPaymentDTO paymentDTO){
+        Optional<List<OrdersHistory>> history = orderHistory.findByCustomer_UsernameAndStatus(paymentDTO.getUsername(), OrderStatus.UNPAID);
         if (history.isPresent()) {
-            OrdersHistory order = history.get();
+            OrdersHistory order = history.get().getFirst();
             order.setStatus(OrderStatus.PAID);
             Payment payment = new Payment();
             payment.setCustomer(order.getCustomer());
             payment.setOrderHistoryId(order.getId());
-            payment.setAmount(order.getTotal());
+            payment.setCashAmount(paymentDTO.getCashAmount());
             payment.setPaymentMethod(paymentDTO.getPaymentMethod());
             orderHistory.save(order);
             paymentRepository.save(payment);
-            return payment;
+
+            return getOrderPaymentDTO(paymentDTO, order);
         } else if (paymentDTO.isGuest()) {
             Payment payment = new Payment();
             Optional<OrdersHistory> ordersHistory = orderHistory.findByCustomer_CustomerIdAndStatus(payment.getCustomer().getUsername(), OrderStatus.UNPAID);
@@ -94,15 +95,29 @@ public class CashierMenuService {
                 order.setStatus(OrderStatus.PAID);
                 payment.setCustomer(orders.get().getCustomer());
                 payment.setOrderHistoryId(ordersHistory.get().getId());
-                payment.setAmount(orders.get().getTotal());
+                payment.setCashAmount(paymentDTO.getCashAmount());
                 payment.setPaymentMethod(paymentDTO.getPaymentMethod());
                 orderHistory.save(order);
                 paymentRepository.save(payment);
-            }
 
-            return payment;
+                return getOrderPaymentDTO(paymentDTO, order);
+            }
         }
         return null;
+    }
+
+    private OrderPaymentDTO getOrderPaymentDTO(OrderPaymentDTO paymentDTO, OrdersHistory order) {
+        OrderPaymentDTO orderPayment = new OrderPaymentDTO();
+        List<Order> orders = order.getOrders();
+
+        orderPayment.setUsername(paymentDTO.getUsername());
+        orderPayment.setPaymentMethod(paymentDTO.getPaymentMethod());
+        orderPayment.setOrders(orders);
+        orderPayment.setTotalAmount(order.getTotal());
+        orderPayment.setVat(orderPayment.getTotalAmount() * 0.12);
+        orderPayment.setVatableSale(orderPayment.getTotalAmount() - orderPayment.getVat());
+        orderPayment.setCashAmount(paymentDTO.getCashAmount());
+        return orderPayment;
     }
 
     public boolean usernameForTakeOutIsExisting(String username) {

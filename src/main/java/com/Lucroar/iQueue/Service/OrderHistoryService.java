@@ -5,11 +5,8 @@ import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.OrderStatus;
 import com.Lucroar.iQueue.Entity.OrdersHistory;
 import com.Lucroar.iQueue.Repository.OrdersHistoryRepository;
-import com.Lucroar.iQueue.Repository.OrdersRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,22 +25,32 @@ public class OrderHistoryService {
 
     public List<OrdersHistoryDTO> viewCustomerHistory(Customer customer) {
         List<OrdersHistory> ordersHistory = ordersHistoryRepository
-                .findByCustomer_UsernameAndStatusIn(customer.getUsername(), List.of(OrderStatus.PAID));
+                .findByCustomer_UsernameAndStatusIn(customer.getUsername(), List.of(OrderStatus.PAID, OrderStatus.RETURNED));
         return ordersHistory.stream()
                 .map(orderHistory -> new OrdersHistoryDTO(
                         orderHistory.getId(),
-                        orderHistory.getOrderDate(),
+                        orderHistory.getOrderCreation(),
                         orderHistory.getOrders(),
                         orderHistory.getTotal()))
                 .toList();
     }
 
-    public OrdersHistoryDTO viewCurrentOrder(Customer customer) {
-        Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(
+    public List<OrdersHistoryDTO> viewCurrentOrder(Customer customer) {
+        Optional<List<OrdersHistory>> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(
                 customer.getUsername(), OrderStatus.ORDERING);
+
         if (ordersHistory.isPresent()) {
-            OrdersHistory orderHistory = ordersHistory.get();
-            return new OrdersHistoryDTO(orderHistory.getId(), orderHistory.getOrderDate(), orderHistory.getOrders(), orderHistory.getTotal());
+            List<OrdersHistory> orderHistoryList = ordersHistory.get();
+            return orderHistoryList.stream()
+                    .map(
+                    orderHistory -> {
+                        OrdersHistoryDTO dto = new OrdersHistoryDTO();
+                        dto.setId(orderHistory.getId());
+                        dto.setOrderDate(orderHistory.getOrderCreation());
+                        dto.setOrders(orderHistory.getOrders());
+                        dto.setTotal(orderHistory.getTotal());
+                        return dto;
+                    }).toList();
         }
         return null;
     }
@@ -53,4 +60,21 @@ public class OrderHistoryService {
         return ordersHistory.orElse(null);
     }
 
+    public OrdersHistoryDTO returnOrder(String orderId, String description){
+        Optional<OrdersHistory> orderOpt = ordersHistoryRepository.findById(orderId);
+        if (orderOpt.isPresent()) {
+            OrdersHistory ordersHistory = orderOpt.get();
+            ordersHistory.setStatus(OrderStatus.RETURNING);
+            ordersHistory.setDescription(description);
+            ordersHistoryRepository.save(ordersHistory);
+            OrdersHistoryDTO dto = new OrdersHistoryDTO();
+            dto.setId(ordersHistory.getId());
+            dto.setOrderDate(ordersHistory.getOrderCreation());
+            dto.setOrders(ordersHistory.getOrders());
+            dto.setTotal(ordersHistory.getTotal());
+            dto.setDescription(description);
+            return dto;
+        }
+        return null;
+    }
 }

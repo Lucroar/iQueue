@@ -55,7 +55,7 @@ public class CashierCartService {
             ordersHistory.setOrders(orders.getOrders());
             ordersHistory.setStatus(OrderStatus.UNPAID);
             ordersHistory.setTotal(orders.getTotal());
-            ordersHistory.setOrderDate(LocalDateTime.now());
+            ordersHistory.setOrderCreation(LocalDateTime.now());
             ordersHistory.setTotal(orders.getTotal());
             ordersHistory.setOrders(orders.getOrders());
             if(!order.isTakeOut()) ordersHistory.setTableNumber(queueEntry.get().getTable_number());

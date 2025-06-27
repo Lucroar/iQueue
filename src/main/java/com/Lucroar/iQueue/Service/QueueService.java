@@ -1,6 +1,5 @@
 package com.Lucroar.iQueue.Service;
 
-import com.Lucroar.iQueue.DTO.CashierMainMenuDTO;
 import com.Lucroar.iQueue.DTO.CustomerDTO;
 import com.Lucroar.iQueue.DTO.QueueCreationRequest;
 import com.Lucroar.iQueue.DTO.QueueDTO;
@@ -10,10 +9,10 @@ import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class QueueService {
@@ -27,12 +26,11 @@ public class QueueService {
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
     @Getter
     private final String accessCode = "x9j3b7qt2a0e";
-    private final TableService tableService;
 
     public QueueService(QueueRepository queueRepository, CustomerRepository customerRepository,
                         CartRepository cartRepository, OrdersHistoryRepository ordersHistoryRepository,
                         QueueHistoryRepository queueHistoryRepository, DailySequenceGeneratorService sequenceGenerator,
-                        InMemoryQueueService inMemoryQueueService, TableService tableService) {
+                        InMemoryQueueService inMemoryQueueService) {
         this.queueRepository = queueRepository;
         this.customerRepository = customerRepository;
         this.cartRepository = cartRepository;
@@ -40,7 +38,6 @@ public class QueueService {
         this.queueHistoryRepository = queueHistoryRepository;
         this.sequenceGenerator = sequenceGenerator;
         this.inMemoryQueueService = inMemoryQueueService;
-        this.tableService = tableService;
     }
 
     public QueueDTO createQueue(Customer customer, QueueCreationRequest queueRequest) {
@@ -83,28 +80,75 @@ public class QueueService {
         return null;
     }
 
-    //Mark the table as dirty and customer as done
     public QueueDTO finishedQueue(Customer customer) {
-        Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(customer.getUsername(), List.of(Status.SEATED));
-        Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.ORDERING);
+        Optional<QueueEntry> queueCont = queueRepository.findByCustomerUsernameAndStatusIn(
+                customer.getUsername(), List.of(Status.SEATED));
+
+        Optional<List<OrdersHistory>> ordersHistoriesOpt = ordersHistoryRepository
+                .findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.ORDERING);
 
         if (queueCont.isPresent()) {
             QueueEntry queueEntryEntity = queueCont.get();
+
+            // Remove from queue, release table, mark done
             queueRepository.delete(queueEntryEntity);
             queueEntryEntity.setStatus(Status.DONE);
             inMemoryQueueService.releaseTable(queueEntryEntity.getTable_number());
             queueHistoryRepository.save(new QueueHistory(queueEntryEntity));
+
+            // Clear cart
             Optional<Cart> cart = cartRepository.findByCustomer_Username(customer.getUsername());
             cart.ifPresent(cartRepository::delete);
-            if (ordersHistory.isPresent()) {
-                OrdersHistory ordersHistoryEntity = ordersHistory.get();
-                ordersHistoryEntity.setStatus(OrderStatus.UNPAID);
-                ordersHistoryRepository.save(ordersHistoryEntity);
-            }
+
+            // Combine all order histories
+            combineOrders(ordersHistoriesOpt, queueEntryEntity);
+
             return new QueueDTO(queueEntryEntity);
         }
+
         return null;
     }
+
+    private void combineOrders(Optional<List<OrdersHistory>> ordersHistoriesOpt, QueueEntry queueEntryEntity) {
+        if (ordersHistoriesOpt.isPresent()) {
+            List<OrdersHistory> orderingHistories = ordersHistoriesOpt.get();
+
+            List<Order> mergedOrders = new ArrayList<>();
+            double total = 0.0;
+
+            for (OrdersHistory history : orderingHistories) {
+                for (Order order : history.getOrders()) {
+                    Optional<Order> existing = mergedOrders.stream()
+                            .filter(o -> o.getProduct_id().equals(order.getProduct_id()))
+                            .findFirst();
+
+                    if (existing.isPresent()) {
+                        Order existingOrder = existing.get();
+                        existingOrder.setQuantity(existingOrder.getQuantity() + order.getQuantity());
+                    } else {
+                        mergedOrders.add(new Order(order)); // Deep copy recommended
+                    }
+
+                    total += order.getPrice() * order.getQuantity();
+                }
+
+                // Delete individual history record
+                ordersHistoryRepository.delete(history);
+            }
+
+            // Save new merged OrdersHistory as UNPAID
+            OrdersHistory consolidated = new OrdersHistory(
+                    orderingHistories.getFirst().getCustomer(),
+                    mergedOrders,
+                    OrderStatus.UNPAID,
+                    LocalDateTime.now(),
+                    queueEntryEntity.getTable_number()
+            );
+            consolidated.setTotal(total);
+            ordersHistoryRepository.save(consolidated);
+        }
+    }
+
 
     //Create a random cashier based user for queue creation
     public QueueDTO cashierCreateQueue(QueueCreationRequest queueRequest) {
@@ -136,27 +180,37 @@ public class QueueService {
     }
 
     public QueueDTO doneTable(CustomerDTO customerDTO) {
-        Optional<QueueEntry> queueEntry = queueRepository.findByCustomer_Username(customerDTO.getUsername());
+        Optional<QueueEntry> queueEntry = queueRepository.findByCustomerUsernameAndStatusIn(customerDTO.getUsername(), List.of(Status.SEATED));
+
         if (queueEntry.isPresent()) {
             QueueEntry entry = queueEntry.get();
+
+            // Remove from queue and archive
             queueRepository.delete(entry);
             entry.setStatus(Status.DONE);
             queueHistoryRepository.save(new QueueHistory(entry));
-            Optional<OrdersHistory> ordersHistory = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customerDTO.getUsername(), OrderStatus.ORDERING);
-            if (ordersHistory.isPresent()) {
-                OrdersHistory order = ordersHistory.get();
-                order.setStatus(OrderStatus.UNPAID);
-            }
+
+            // Fetch all ORDERING OrdersHistory records for this customer
+            Optional<List<OrdersHistory>> ordersHistoriesOpt =
+                    ordersHistoryRepository.findByCustomer_UsernameAndStatus(customerDTO.getUsername(), OrderStatus.ORDERING);
+
+            combineOrders(ordersHistoriesOpt, entry);
+
             inMemoryQueueService.releaseTable(entry.getTable_number());
             return new QueueDTO(entry);
         }
+
         return null;
     }
 
     public boolean existingOrderHistory(Customer customer){
-        Optional<OrdersHistory> historyOpt = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.UNPAID);
-        return historyOpt.isPresent();
+        Optional<List<OrdersHistory>> historyOpt = ordersHistoryRepository.findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.UNPAID);
+        return ordersHistoryRepository
+                .findByCustomer_UsernameAndStatus(customer.getUsername(), OrderStatus.UNPAID)
+                .map(list -> !list.isEmpty())
+                .orElse(false);
     }
+
 //    private CustomerDTO generateRandomGuestNumber(){
 //        String randomCode = String.format("%04d", new Random().nextInt(10000)); // 0000 - 9999
 //        CustomerDTO guest = new CustomerDTO();

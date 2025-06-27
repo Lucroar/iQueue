@@ -42,11 +42,6 @@ public class QueueController {
         return ResponseEntity.ok(queueDTO);
     }
 
-//    @PatchMapping("/enter")
-//    public ResponseEntity<?> enterQueue(@RequestBody QueueDTO queue) {
-//        return ResponseEntity.ok(queueService.enterQueue(queue));
-//    }
-
     @GetMapping("/check")
     public ResponseEntity<?> checkQueue(@AuthenticationPrincipal Customer customer) {
         return ResponseEntity.ok(queueService.checkQueue(customer));

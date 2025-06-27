@@ -1,5 +1,6 @@
 package com.Lucroar.iQueue.Service;
 
+import com.Lucroar.iQueue.DTO.OrdersHistoryDTO;
 import com.Lucroar.iQueue.DTO.TableOrderDTO;
 import com.Lucroar.iQueue.Entity.Order;
 import com.Lucroar.iQueue.Entity.OrderStatus;
@@ -24,41 +25,38 @@ public class KitchenService {
         this.ordersHistoryRepository = ordersHistoryRepository;
     }
 
+    //Changed to create a new document that will be combined if the customer is done ordering
     public OrdersHistory orderServed(TableOrderDTO tableOrderDTO) {
         Optional<Orders> ordersDTO = ordersRepository.findById(tableOrderDTO.getId());
         if (ordersDTO.isPresent()) {
             Orders orders = ordersDTO.get();
+
             if (!orders.getCustomer().isGuest() || !orders.isTakeOut()) {
-
-                OrdersHistory ordersHistory = ordersHistoryRepository.findByCustomer_CustomerIdAndStatus(orders.getCustomer().getCustomerId(), OrderStatus.ORDERING)
-                        .orElse(new OrdersHistory(orders.getCustomer(), new ArrayList<>(), OrderStatus.ORDERING, LocalDateTime.now(), orders.getTableNumber()));
-
                 List<Order> newOrders = orders.getOrders();
-                List<Order> existingOrders = ordersHistory.getOrders();
+                double total = 0;
 
                 for (Order order : newOrders) {
-                    boolean found = false;
-                    for (Order existingOrder : existingOrders) {
-                        if (existingOrder.getProduct_id().equals(order.getProduct_id())) {
-                            ordersHistory.setTotal(ordersHistory.getTotal() + (order.getPrice() * order.getQuantity()));
-                            existingOrder.setQuantity(existingOrder.getQuantity() + order.getQuantity());
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
-                        existingOrders.add(order);
-                        ordersHistory.setTotal(ordersHistory.getTotal() + (order.getPrice() * order.getQuantity()));
-                    }
+                    total += order.getPrice() * order.getQuantity();
                 }
+
+                OrdersHistory newHistory = new OrdersHistory(
+                        orders.getCustomer(),
+                        new ArrayList<>(newOrders), // Create a new list to avoid reference issues
+                        OrderStatus.ORDERING,
+                        LocalDateTime.now(),
+                        orders.getTableNumber()
+                );
+                newHistory.setTotal(total);
+
                 ordersRepository.delete(orders);
-                return ordersHistoryRepository.save(ordersHistory);
+                return ordersHistoryRepository.save(newHistory);
             }
+
             ordersRepository.delete(orders);
         }
         return null;
     }
+
 
     public List<TableOrderDTO> viewAllOrders(){
         List<Orders> tableOrders = ordersRepository.findAllByOrderByCreatedAtAsc();
@@ -69,10 +67,17 @@ public class KitchenService {
                     dto.setUsername(orders.getCustomer().getUsername());
                     dto.setTakeOut(orders.isTakeOut());
                     dto.setTableNumber(orders.getTableNumber());
+                    dto.setOrderTime(orders.getCreatedAt());
                     dto.setOrders(trimOrders(orders.getOrders()));
                     return dto;
                 }).toList();
     }
+
+    //TODO accept returning order
+    public List<OrdersHistory> viewReturningOrders() {
+        return ordersHistoryRepository.findByStatus(OrderStatus.RETURNING);
+    }
+
 
     private List<Order> trimOrders(List<Order> orders){
         return orders.stream()
