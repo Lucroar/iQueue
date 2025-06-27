@@ -38,6 +38,11 @@ public class CashierMenuController {
         return ResponseEntity.ok(cashierMenuService.orderPayment(payment));
     }
 
+    @GetMapping("/view/unpaid/{username}")
+    public ResponseEntity<?> viewUnpaid(@PathVariable String username) {
+        return ResponseEntity.ok(cashierMenuService.viewOrderPayable(username));
+    }
+
     @PostMapping("/done-table")
     public ResponseEntity<?> doneTable(@RequestBody CustomerDTO customerDTO){
         return ResponseEntity.ok(queueService.doneTable(customerDTO));

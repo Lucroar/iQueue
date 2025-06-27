@@ -22,6 +22,7 @@ public class Customer implements UserDetails {
     private String first_name;
     private String last_name;
     private String email;
+    private String mobileNumber;
     private String username;
     private String password;
 

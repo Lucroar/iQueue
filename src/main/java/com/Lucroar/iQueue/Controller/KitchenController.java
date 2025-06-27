@@ -1,7 +1,7 @@
 package com.Lucroar.iQueue.Controller;
 
+import com.Lucroar.iQueue.DTO.ReturnRequestDTO;
 import com.Lucroar.iQueue.DTO.TableOrderDTO;
-import com.Lucroar.iQueue.Entity.Table;
 import com.Lucroar.iQueue.Service.KitchenService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,5 +23,10 @@ public class KitchenController {
     @GetMapping("/orders")
     public ResponseEntity<?> getOrders(){
         return ResponseEntity.ok(kitchenService.viewAllOrders());
+    }
+
+    @PostMapping("/return")
+    public ResponseEntity<?> returnOrder(@RequestBody ReturnRequestDTO returnRequest){
+        return ResponseEntity.ok(kitchenService.resolveReturningOrder(returnRequest.getId(), returnRequest.getAction()));
     }
 }

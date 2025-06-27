@@ -26,11 +26,12 @@ public class QueueService {
     private final List<Integer> tableTiers = Arrays.asList(2, 4, 6);
     @Getter
     private final String accessCode = "x9j3b7qt2a0e";
+    private final TableRepository tableRepository;
 
     public QueueService(QueueRepository queueRepository, CustomerRepository customerRepository,
                         CartRepository cartRepository, OrdersHistoryRepository ordersHistoryRepository,
                         QueueHistoryRepository queueHistoryRepository, DailySequenceGeneratorService sequenceGenerator,
-                        InMemoryQueueService inMemoryQueueService) {
+                        InMemoryQueueService inMemoryQueueService, TableRepository tableRepository) {
         this.queueRepository = queueRepository;
         this.customerRepository = customerRepository;
         this.cartRepository = cartRepository;
@@ -38,6 +39,7 @@ public class QueueService {
         this.queueHistoryRepository = queueHistoryRepository;
         this.sequenceGenerator = sequenceGenerator;
         this.inMemoryQueueService = inMemoryQueueService;
+        this.tableRepository = tableRepository;
     }
 
     public QueueDTO createQueue(Customer customer, QueueCreationRequest queueRequest) {
@@ -113,6 +115,8 @@ public class QueueService {
         if (ordersHistoriesOpt.isPresent()) {
             List<OrdersHistory> orderingHistories = ordersHistoriesOpt.get();
 
+            if (orderingHistories.isEmpty()) return; // No histories to process
+
             List<Order> mergedOrders = new ArrayList<>();
             double total = 0.0;
 
@@ -136,9 +140,11 @@ public class QueueService {
                 ordersHistoryRepository.delete(history);
             }
 
-            // Save new merged OrdersHistory as UNPAID
+            // Safely get the first customer from the first history record
+            OrdersHistory firstHistory = orderingHistories.stream().findFirst().get();
+
             OrdersHistory consolidated = new OrdersHistory(
-                    orderingHistories.getFirst().getCustomer(),
+                    firstHistory.getCustomer(),
                     mergedOrders,
                     OrderStatus.UNPAID,
                     LocalDateTime.now(),
@@ -148,6 +154,7 @@ public class QueueService {
             ordersHistoryRepository.save(consolidated);
         }
     }
+
 
 
     //Create a random cashier based user for queue creation
@@ -180,7 +187,8 @@ public class QueueService {
     }
 
     public QueueDTO doneTable(CustomerDTO customerDTO) {
-        Optional<QueueEntry> queueEntry = queueRepository.findByCustomerUsernameAndStatusIn(customerDTO.getUsername(), List.of(Status.SEATED));
+        Optional<QueueEntry> queueEntry = queueRepository.findByCustomerUsernameAndStatusIn(
+                customerDTO.getUsername(), List.of(Status.SEATED));
 
         if (queueEntry.isPresent()) {
             QueueEntry entry = queueEntry.get();
@@ -195,8 +203,8 @@ public class QueueService {
                     ordersHistoryRepository.findByCustomer_UsernameAndStatus(customerDTO.getUsername(), OrderStatus.ORDERING);
 
             combineOrders(ordersHistoriesOpt, entry);
-
             inMemoryQueueService.releaseTable(entry.getTable_number());
+            Table table = tableRepository.findByTableNumber(entry.getTable_number());
             return new QueueDTO(entry);
         }
 

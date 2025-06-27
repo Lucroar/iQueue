@@ -15,6 +15,7 @@ public class Payment {
     private double cashAmount;
     private double totalAmount;
     private double vatableSale;
+    private double change;
     private double vat;
     private PaymentMethod paymentMethod;
 }

@@ -5,6 +5,7 @@ import com.Lucroar.iQueue.Entity.Customer;
 import com.Lucroar.iQueue.Entity.Reservation;
 import com.Lucroar.iQueue.Entity.Status;
 import com.Lucroar.iQueue.Exceptions.ReservationResult;
+import com.Lucroar.iQueue.Repository.CustomerRepository;
 import com.Lucroar.iQueue.Repository.ReservationRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +15,11 @@ import java.util.Optional;
 @Service
 public class ReservationService {
     private final ReservationRepository reservationRepository;
-    public ReservationService(ReservationRepository reservationRepository) {
+    private final CustomerRepository customerRepository;
+
+    public ReservationService(ReservationRepository reservationRepository, CustomerRepository customerRepository) {
         this.reservationRepository = reservationRepository;
+        this.customerRepository = customerRepository;
     }
 
     public ReservationResult createReservation(Customer customer, Reservation reservation) {
@@ -29,9 +33,15 @@ public class ReservationService {
             return new ReservationResult(false, "Reservation must be made at least 3 days in advance", null);
         }
 
+        if (reservation.getNum_people() > 6){
+            return new ReservationResult(false, "Number of people must be no more than 6", null);
+        }
+
+        Optional<Customer> customerOptional = customerRepository.findByUsername(customer.getUsername());
         CustomerDTO customerDTO = new CustomerDTO(customer);
         customerDTO.setCustomerId(customer.getId());
         customerDTO.setUsername(customer.getUsername());
+        customerOptional.ifPresent(value -> customerDTO.setMobileNumber(value.getMobileNumber()));
         reservation.setCustomer(customerDTO);
         reservation.setStatus(Status.CREATED);
 

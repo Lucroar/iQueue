@@ -70,6 +70,23 @@ public class CashierMenuService {
         }).toList();
     }
 
+    //Considering done queue
+    public OrderPaymentDTO viewOrderPayable(String username){
+        Optional<List<OrdersHistory>> history = orderHistory.findByCustomer_UsernameAndStatus(username, OrderStatus.UNPAID);
+        if (history.isPresent()) {
+            OrdersHistory historyList = history.get().getFirst();
+            OrderPaymentDTO orderPayment = new OrderPaymentDTO();
+
+            orderPayment.setUsername(historyList.getCustomer().getUsername());
+            orderPayment.setOrders(historyList.getOrders());
+            orderPayment.setTotalAmount(historyList.getTotal());
+            orderPayment.setVat(orderPayment.getTotalAmount() * 0.12);
+            orderPayment.setVatableSale(orderPayment.getTotalAmount() - orderPayment.getVat());
+            return orderPayment;
+        }
+        return null;
+    }
+
     public OrderPaymentDTO orderPayment(OrderPaymentDTO paymentDTO){
         Optional<List<OrdersHistory>> history = orderHistory.findByCustomer_UsernameAndStatus(paymentDTO.getUsername(), OrderStatus.UNPAID);
         if (history.isPresent()) {
@@ -79,7 +96,10 @@ public class CashierMenuService {
             payment.setCustomer(order.getCustomer());
             payment.setOrderHistoryId(order.getId());
             payment.setCashAmount(paymentDTO.getCashAmount());
+            payment.setTotalAmount(order.getTotal());
+            payment.setChange(paymentDTO.getCashAmount() - order.getTotal());
             payment.setPaymentMethod(paymentDTO.getPaymentMethod());
+
             orderHistory.save(order);
             paymentRepository.save(payment);
 
@@ -94,9 +114,12 @@ public class CashierMenuService {
                 OrdersHistory order = ordersHistory.get();
                 order.setStatus(OrderStatus.PAID);
                 payment.setCustomer(orders.get().getCustomer());
-                payment.setOrderHistoryId(ordersHistory.get().getId());
+                payment.setOrderHistoryId(order.getId());
                 payment.setCashAmount(paymentDTO.getCashAmount());
+                payment.setTotalAmount(order.getTotal());
+                payment.setChange(paymentDTO.getCashAmount() - order.getTotal());
                 payment.setPaymentMethod(paymentDTO.getPaymentMethod());
+
                 orderHistory.save(order);
                 paymentRepository.save(payment);
 
@@ -115,8 +138,9 @@ public class CashierMenuService {
         orderPayment.setOrders(orders);
         orderPayment.setTotalAmount(order.getTotal());
         orderPayment.setVat(orderPayment.getTotalAmount() * 0.12);
-        orderPayment.setVatableSale(orderPayment.getTotalAmount() - orderPayment.getVat());
         orderPayment.setCashAmount(paymentDTO.getCashAmount());
+        orderPayment.setVatableSale(orderPayment.getTotalAmount() - orderPayment.getVat());
+        orderPayment.setChange(orderPayment.getCashAmount() - orderPayment.getTotalAmount());
         return orderPayment;
     }
 

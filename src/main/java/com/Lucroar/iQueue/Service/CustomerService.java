@@ -41,6 +41,7 @@ public class CustomerService {
             customer.setEmail(customerDTO.getEmail());
             customer.setFirst_name(customerDTO.getFirst_Name());
             customer.setLast_name(customerDTO.getLast_Name());
+            customer.setMobileNumber(customerDTO.getMobileNumber());
             customerRepository.save(customer);
         }
         return customerDTO;

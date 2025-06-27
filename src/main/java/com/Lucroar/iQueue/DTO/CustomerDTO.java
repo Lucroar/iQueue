@@ -13,6 +13,7 @@ public class CustomerDTO {
     private String username;
     private String first_Name;
     private String last_Name;
+    private String mobileNumber;
     private String email;
     private String password;
     private boolean isGuest;
@@ -22,6 +23,7 @@ public class CustomerDTO {
         this.username = customer.getUsername();
         this.first_Name = customer.getFirst_name();
         this.last_Name = customer.getLast_name();
+        this.mobileNumber = customer.getMobileNumber();
         this.email = customer.getEmail();
     }
 }

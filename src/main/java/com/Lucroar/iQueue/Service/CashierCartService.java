@@ -68,6 +68,7 @@ public class CashierCartService {
                         orders.getTableNumber(),
                         orders.isTakeOut(),
                         orders.getCreatedAt(),
+                        OrderStatus.ORDERING,
                         orders.getOrders()));
             return ordersRepository.save(orders);
         }

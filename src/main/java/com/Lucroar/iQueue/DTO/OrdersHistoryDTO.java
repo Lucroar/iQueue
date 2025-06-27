@@ -24,10 +24,12 @@ public class OrdersHistoryDTO {
     private String description;
     private double total;
 
-    public OrdersHistoryDTO(String id, LocalDateTime orderDate, List<Order> orders, double total) {
+    public OrdersHistoryDTO(String id, LocalDateTime orderDate, List<Order> orders, double total, OrderStatus status, String description) {
         this.id = id;
         this.orderDate = orderDate;
         this.orders = orders;
         this.total = total;
+        this.status = status;
+        this.description = description;
     }
 }
